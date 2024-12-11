@@ -37,7 +37,9 @@ public class GamePanel extends JPanel implements Runnable {
     private final ExecutorService executorService = Executors.newFixedThreadPool(3);
 
     private Player player;
-
+    private GUI ui;
+    int type=0;
+    int[] playerStats = new int[5];
     public GamePanel() {
         setBackground(Color.WHITE);
         setFocusable(true);
@@ -47,8 +49,10 @@ public class GamePanel extends JPanel implements Runnable {
         bullets = new ArrayList<>();
         enemies = new ArrayList<>();
         // Initialize player
-        player = new Player(getWidth() / 2, getHeight() / 2);
+        player = new Player(getWidth() / 2, getHeight() / 2,playerStats);
+        playerStats= player.getStats(type);
 
+        ui=new GUI();
         // Add event listeners
         addKeyListener(player.getKeyListener(this));
         addMouseMotionListener(player.getMouseMotionListener(this));
@@ -65,6 +69,7 @@ public class GamePanel extends JPanel implements Runnable {
                 //System.out.println("Bullet created: " + bullets.size() + " bullets in the list.");
             }
         });
+
     }
 
     @Override
@@ -97,6 +102,7 @@ public class GamePanel extends JPanel implements Runnable {
         long endTime = System.nanoTime();
         long renderTime = (endTime - startTime) / 1_000_000; // Convert to milliseconds
         System.out.println("Render time: " + renderTime);
+
     }
 
     private void drawChunks(Graphics2D g2d) {
@@ -160,6 +166,7 @@ public class GamePanel extends JPanel implements Runnable {
         g2d.drawString("Chunk: X " + CurrentChunkX + "   Y " + CurrentChunkY, 10, 70);
         g2d.drawString("Coords: X " + adjustedX + "   Y " + adjustedY, 10, 110);
         g2d.drawString("Angle: " + player.getAngle(), 10, 150);
+        ui.render(g2d,playerStats[0], playerStats[1], playerStats[2], playerStats[3], playerStats[4]);
     }
 
     private void drawTiles(Graphics2D g2d) {
