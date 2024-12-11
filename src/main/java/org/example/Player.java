@@ -55,7 +55,6 @@ public class Player {
                 double deltaX = e.getX() - centerX;
                 double deltaY = e.getY() - centerY;
                 angle = Math.atan2(deltaY, deltaX); // Update the angle based on mouse movement
-                panel.repaint();
             }
         };
     }
