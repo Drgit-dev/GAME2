@@ -133,13 +133,21 @@ public class Player {
                 stats[2] = 50;
                 stats[3] = 50;
                 stats[4] = 0;
-
+                break;
             case 1:
                 stats[0] = 150;
                 stats[1] = 150;
                 stats[2] = 100;
                 stats[3] = 100;
                 stats[4] = 2;
+                break;
+            case 2:
+                stats[0] = 250;
+                stats[1] = 250;
+                stats[2] = 20;
+                stats[3] = 20;
+                stats[4] = 2;
+                break;
 
         }
         return stats;

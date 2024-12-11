@@ -38,7 +38,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     private Player player;
     private GUI ui;
-    int type=0;
+    int type=2;
     int[] playerStats = new int[5];
     public GamePanel() {
         setBackground(Color.WHITE);
