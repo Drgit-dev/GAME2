@@ -20,8 +20,11 @@ public class Player {
             "src/main/resources/player/player_sprites.png"; // Path to the sprite sheet
     private BufferedImage spriteSheet;
     private int numberofframes = 3;
+    int type=0;
+    int[] stats =new int[5];
 
-    public Player(int startX, int startY) {
+    public Player(int startX, int startY, int[] stats) {
+        this.stats=getStats(type);
         // Load the sprite sheet image
         try {
             spriteSheet = ImageIO.read(new File(PATH_TO_TILE_SPRITESHEET));
@@ -122,4 +125,25 @@ public class Player {
     public int getSpritecol() {
         return spritecol;
     }
+    public int[] getStats(int type) {
+        switch (type) {
+            case 0:
+                stats[0] = 200;
+                stats[1] = 200;
+                stats[2] = 50;
+                stats[3] = 50;
+                stats[4] = 0;
+
+            case 1:
+                stats[0] = 150;
+                stats[1] = 150;
+                stats[2] = 100;
+                stats[3] = 100;
+                stats[4] = 2;
+
+        }
+        return stats;
+
+    }
+
 }
