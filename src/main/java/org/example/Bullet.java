@@ -16,9 +16,11 @@ public class Bullet {
         this.angle = Math.atan2(target.y - startY, target.x - startX);
     }
 
-    public void move() {
+    public void move(double dx, double dy) {
         x += SPEED * Math.cos(angle);
         y += SPEED * Math.sin(angle);
+        x -= dx;
+        y -= dy;
     }
 
     public boolean isOutOfBounds(int width, int height) {
