@@ -22,7 +22,7 @@ public class GamePanel extends JPanel implements Runnable {
     private final int ChunkRadius = 1; // Distancia en chunks desde el jugador para activar
     private final int ChunkSizePixels = ChunkSize * SpriteSize;
 
-    private boolean upPressed = false, downPressed = false, leftPressed = false, rightPressed = false;
+    public boolean upPressed = false, downPressed = false, leftPressed = false, rightPressed = false;
     private int CurrentChunkX, CurrentChunkY; // Chunk actual del jugador
     private int lastChunkX = Integer.MIN_VALUE, lastChunkY = Integer.MIN_VALUE; // Para detectar cambios de chunk
 
@@ -206,6 +206,7 @@ public class GamePanel extends JPanel implements Runnable {
 
         // Update current chunk
         updateChunks();
+        updateBullets(moveX,moveY);
         System.out.println("Updatemovement");
 
         //Separar esto que es nuevo
@@ -224,9 +225,10 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
-    private void updateBullets() {
+    private void updateBullets(double dx, double dy) {
         bullets.removeIf(bullet -> {
-            bullet.move();
+            int speed = 650;
+            bullet.move(dx,dy);
             System.out.println("Bullet position: (" + bullet.getX() + ", " + bullet.getY() + ")");
             return bullet.isOutOfBounds(getWidth(), getHeight());
         });
@@ -351,11 +353,9 @@ public class GamePanel extends JPanel implements Runnable {
         while (true) {
             updateDeltaTime();
             updateMovement();
-            updateBullets();
             updateEnemies();
             checkCollisions();
             SwingUtilities.invokeLater(this::repaint);
-
             updateFPS();
 
             try {
