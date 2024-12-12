@@ -279,7 +279,6 @@ public class GamePanel extends JPanel implements Runnable {
     private void updateBullets(double dx, double dy) {
         bullets.removeIf(bullet -> {
             bullet.move(dx,dy);
-            System.out.println("Bullet position: (" + bullet.getX() + ", " + bullet.getY() + ")");
             return bullet.isOutOfBounds(getWidth(), getHeight());
         });
     }
@@ -304,15 +303,18 @@ public class GamePanel extends JPanel implements Runnable {
         Random rand = new Random();
         int x, y;
 
+        int validWidth = Math.max(getWidth(), 1);
+        int validHeight = Math.max(getHeight(), 1);
+        int validMapX = Math.max(mapX, 0);
+        int validMapY = Math.max(mapY, 0);
+
         // Determine random spawn position (random edge of the screen)
         if (rand.nextBoolean()) {
-            x = rand.nextInt(getWidth() + mapX);
-            // Include mapX offset for absolute position
-            y = rand.nextBoolean() ? mapY -Enemy.SIZE : mapY + getHeight(); // Top or bottom edge
+            x = rand.nextInt(validWidth + validMapX);
+            y = rand.nextBoolean() ? validMapY - Enemy.SIZE : validMapY + validHeight;
         } else {
-            x = rand.nextBoolean() ? mapX -Enemy.SIZE : mapX + getWidth(); // Left or right edge
-            y = rand.nextInt(getHeight() + mapY);
-            // Include mapY offset
+            x = rand.nextBoolean() ? validMapX - Enemy.SIZE : validMapX + validWidth;
+            y = rand.nextInt(validHeight + validMapY);
         }
         enemies.add(new Enemy(x, y));
         System.out.println("Enemy spawned at: " + x + ", " + y); // Debug
