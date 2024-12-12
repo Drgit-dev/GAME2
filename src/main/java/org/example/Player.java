@@ -13,7 +13,7 @@ import javax.imageio.ImageIO;
 
 public class Player {
     private double angle = 0; // Rotation angle (now unused)
-    private final int spriteWidth = 64, spriteHeight = 64; // Changed sprite size to 64x64
+   public final int spriteWidth = 64, spriteHeight = 64; // Changed sprite size to 64x64
     private int spriterow;
     private int spritecol;
     private static final String PATH_TO_TILE_SPRITESHEET =
@@ -108,6 +108,7 @@ public class Player {
                 if (key == KeyEvent.VK_S) gamePanel.setDownPressed(true);
                 if (key == KeyEvent.VK_A) gamePanel.setLeftPressed(true);
                 if (key == KeyEvent.VK_D) gamePanel.setRightPressed(true);
+
             }
 
             @Override
@@ -117,6 +118,8 @@ public class Player {
                 if (key == KeyEvent.VK_S) gamePanel.setDownPressed(false);
                 if (key == KeyEvent.VK_A) gamePanel.setLeftPressed(false);
                 if (key == KeyEvent.VK_D) gamePanel.setRightPressed(false);
+
+
             }
         };
     }
@@ -131,21 +134,21 @@ public class Player {
                 stats[1] = 200;
                 stats[2] = 50;
                 stats[3] = 50;
-                stats[4] = 0;
+                stats[4] = 10;
                 break;
             case 1:
                 stats[0] = 150;
                 stats[1] = 150;
                 stats[2] = 100;
                 stats[3] = 100;
-                stats[4] = 2;
+                stats[4] = 20;
                 break;
             case 2:
                 stats[0] = 250;
                 stats[1] = 250;
                 stats[2] = 20;
                 stats[3] = 20;
-                stats[4] = 2;
+                stats[4] = 20;
                 break;
 
         }

@@ -42,9 +42,11 @@ public class Bullet {
         // Calculate bounding rectangle for the new enemy
         Rectangle enemyBounds = new Rectangle(enemy.x, enemy.y, Enemy.SIZE, Enemy.SIZE);
 
+
         // Return true if the rectangle intersects
         return bulletBounds.intersects(enemyBounds);
     }
+
     public double getX() {
         return this.x;
     }
