@@ -3,6 +3,8 @@ package org.example;
 import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.VolatileImage;
 import java.util.*;
 import java.util.List;
@@ -13,7 +15,8 @@ public class GamePanel extends JPanel implements Runnable {
     private Set<Point> chunksActivos = new HashSet<>();
     private Map<Point, Chunk> chunkMap = new HashMap<>();
     private final List<Bullet> bullets;  // Lista para almacenar las balas
-    private final List<Enemy> enemies;  // Lista para almacenar las balas
+    private final List<Enemy> enemies;
+    private final List<AmmoBox> ammoBoxes ;// Lista para almacenar las balas
 
     private int mapX = 0, mapY = 0; // Map offset
     int adjustedX, adjustedY;
@@ -38,16 +41,22 @@ public class GamePanel extends JPanel implements Runnable {
 
     private Player player;
     private GUI ui;
+
     int type=2;
     int[] playerStats = new int[5];
+    private boolean SpacePressed=false;
+
     public GamePanel() {
         setBackground(Color.WHITE);
         setFocusable(true);
         setDoubleBuffered(true);
 
-        // Inicializamos las listas de balas y enemigos
+        // Inicializamos las listas de balas y enemigos Y cajas de municiones
         bullets = new ArrayList<>();
         enemies = new ArrayList<>();
+        ammoBoxes = new ArrayList<>();
+
+
         // Initialize player
         player = new Player(getWidth() / 2, getHeight() / 2,playerStats);
         playerStats= player.getStats(type);
@@ -58,16 +67,27 @@ public class GamePanel extends JPanel implements Runnable {
         addMouseMotionListener(player.getMouseMotionListener(this));
 
         // Añadimos un MouseListener para detectar clics
-        addMouseListener(new java.awt.event.MouseAdapter() {
+        addMouseListener(new MouseAdapter() {
+
             @Override
-            public void mousePressed(java.awt.event.MouseEvent e) {
-                // Crear una nueva bala cuando el jugador haga clic
-                Point target = e.getPoint();
-                //System.out.println("Mouse pressed at: " + target);
-                ///System.out.println("Pressed mouse, the bullets should shoot");
-                bullets.add(new Bullet(getWidth() / 2, getHeight() / 2, target));
-                //System.out.println("Bullet created: " + bullets.size() + " bullets in the list.");
-            }
+            public void mousePressed(MouseEvent e) {
+
+                  //if(playerStats[4]>0){// if ammo is 0 you cannot shoot (uncomment this for limited bullets
+                    // Crear una nueva bala cuando el jugador haga clic
+                    Point target = e.getPoint();
+                    //System.out.println("Mouse pressed at: " + target);
+                     ///System.out.println("Pressed mouse, the bullets should shoot");
+                     bullets.add(new Bullet(getWidth() / 2, getHeight() / 2, target));
+                     //System.out.println("Bullet created: " + bullets.size() + " bullets in the list.");
+                      //playerStats[4]--;//reduce the bullet count
+
+                    //}
+                    // if(playerStats[4]<=0){// so the bullet count is not null
+                    //playerStats[4]=0;
+                }
+
+
+
         });
 
     }
@@ -92,6 +112,7 @@ public class GamePanel extends JPanel implements Runnable {
         drawBullets(g2d);
         // Dibujar los enemigos
         drawEnemies(g2d);
+        drawAmmoBoxes(g2d);
 
         // Draw HUD (FPS, coordinates, etc.)
         drawHUD(g2d);
@@ -122,10 +143,13 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private void drawBullets(Graphics2D g2d) {
-        for (Bullet bullet : bullets) {
-            System.out.println("Drawing bullet at: (" + bullet.getX() + ", " + bullet.getY() + ")");
-            bullet.draw(g2d); // Dibuja cada bala
-        }
+
+            for (Bullet bullet : bullets) {
+                System.out.println("Drawing bullet at: (" + bullet.getX() + ", " + bullet.getY() + ")");
+                bullet.draw(g2d); // Dibuja cada bala
+
+            }
+
     }
     private void drawEnemies(Graphics2D g) {
         for (Enemy enemy : enemies) {
@@ -137,25 +161,42 @@ public class GamePanel extends JPanel implements Runnable {
             enemy.draw(g, screenX, screenY);
         }
     }
+    private void spawnAmmoBoxes(){
+        Random rand = new Random();
+        int x, y;
+        x =rand.nextInt(500);
+        y =rand.nextInt(500);
+        ammoBoxes.add(new AmmoBox(x-mapX,y-mapY));
+        System.out.println("AmmoBox spawned at: " + x + ", " + y); // Debug
+    }
+    private void drawAmmoBoxes(Graphics2D g) {
+
+         for (AmmoBox box : ammoBoxes) {
+            box.draw(g,box.x-mapX, box.y-mapY);
+        }
+    }
 
     private void checkCollisions() {
 
         Iterator<Bullet> bulletIterator = bullets.iterator();
+
         while (bulletIterator.hasNext()) {
             Bullet bullet = bulletIterator.next();
-
             Iterator<Enemy> enemyIterator = enemies.iterator();
             while (enemyIterator.hasNext()) {
                 Enemy enemy = enemyIterator.next();
-
-                // Use the intersects implementation
                 if (bullet.intersects(enemy, mapX, mapY)) {
                     enemyIterator.remove(); // Safely remove enemy
-                    bulletIterator.remove(); // Safely remove bullet
-
+                    bulletIterator.remove();
+                    // Safely remove bullet
                     break;  // Exit loop since bullet can only hit one enemy
+
+
                 }
+
             }
+
+
         }
     }
 
@@ -246,6 +287,17 @@ public class GamePanel extends JPanel implements Runnable {
         int playerWorldY = mapY + getHeight() / 2;
         for (Enemy enemy : enemies) {
             enemy.moveTowardsPlayer(playerWorldX, playerWorldY);
+        }
+    }
+    private void updateAmmo(){
+
+        for(AmmoBox box : ammoBoxes){
+            int width=getWidth()/2;
+            int height=getHeight()/2;
+            box.x-=box.getX(mapX)+getWidth()/2;
+            box.y-=box.getY(mapY)+getHeight()/2;
+
+
         }
     }
 
@@ -355,13 +407,16 @@ public class GamePanel extends JPanel implements Runnable {
 
         // Start the enemy spawner timer
         Timer enemySpawner = new Timer(2000, e -> spawnEnemy());
-        enemySpawner.start(); // This will spawn enemies every 2 seconds
+        enemySpawner.start();
+        Timer BoxSpawner = new Timer(5000, _ ->spawnAmmoBoxes());
+        BoxSpawner.start();
 
         while (true) {
             updateDeltaTime();
             updateMovement();
             updateEnemies();
             checkCollisions();
+            updateAmmo();
             SwingUtilities.invokeLater(this::repaint);
             updateFPS();
 
@@ -377,6 +432,9 @@ public class GamePanel extends JPanel implements Runnable {
     public void setDownPressed(boolean downPressed) { this.downPressed = downPressed; }
     public void setLeftPressed(boolean leftPressed) { this.leftPressed = leftPressed; }
     public void setRightPressed(boolean rightPressed) { this.rightPressed = rightPressed; }
+
+
+
 }
 
 

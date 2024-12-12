@@ -20,6 +20,9 @@ public class GUI {
         g2d.drawString("HP",18,175);
         g2d.drawString("MP",18,220);
         g2d.drawString("AMMO:  " + AMMO, 15, 250);
+        g2d.setColor(Color.GRAY);
+        g2d.fillRect(15, 700, 128, 128);
+        g2d.drawString("WEAPON", 15, 695);
 
     }
 }
