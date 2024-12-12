@@ -18,7 +18,7 @@ public class GamePanel extends JPanel implements Runnable {
     int bullet_history = 0;
     private final List<Enemy> enemies;
     private final List<AmmoBox> ammoBoxes ;// Lista para almacenar las balas
-
+    private final List<EnemyBullets> ebullets;
     private int mapX = 0, mapY = 0; // Map offset
     int adjustedX, adjustedY;
     private final int ChunkSize = 16;
@@ -45,7 +45,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     int type=2;
     int[] playerStats = new int[5];
-    private boolean SpacePressed=false;
+
 
     public GamePanel() {
         setBackground(Color.WHITE);
@@ -56,6 +56,7 @@ public class GamePanel extends JPanel implements Runnable {
         bullets = new ArrayList<>();
         enemies = new ArrayList<>();
         ammoBoxes = new ArrayList<>();
+        ebullets = new ArrayList<>();
 
 
         // Initialize player
@@ -115,7 +116,7 @@ public class GamePanel extends JPanel implements Runnable {
         // Dibujar los enemigos
         drawEnemies(g2d);
         drawAmmoBoxes(g2d);
-
+        drawEnemybull(g2d);
         // Draw HUD (FPS, coordinates, etc.)
         drawHUD(g2d);
 
@@ -153,7 +154,13 @@ public class GamePanel extends JPanel implements Runnable {
             }
 
     }
-    private void drawEnemies(Graphics2D g) {
+    private void drawEnemybull(Graphics2D g2d){
+        for(EnemyBullets enemyBullets: ebullets){
+            enemyBullets.draw(g2d);
+        }
+
+    }
+ void drawEnemies(Graphics2D g) {
         for (Enemy enemy : enemies) {
             // Convert absolute enemy position using map offsets
             int screenX = enemy.x - mapX;
@@ -258,6 +265,7 @@ public class GamePanel extends JPanel implements Runnable {
         // Update current chunk
         updateChunks();
         updateBullets(moveX,moveY);
+        updateEBullets(moveX,moveY);
         System.out.println("Updatemovement");
 
         //Separar esto que es nuevo
@@ -282,14 +290,24 @@ public class GamePanel extends JPanel implements Runnable {
             return bullet.isOutOfBounds(getWidth(), getHeight());
         });
     }
+    private void updateEBullets(double dx, double dy) {
+        ebullets.removeIf(enemyBullets  -> {
+            int speed = 650;
+            enemyBullets.move(dx,dy);
+            return enemyBullets.isOutOfBounds(getWidth(), getHeight());
+        });
+    }
 
     private void updateEnemies() {
         int playerWorldX = mapX + getWidth() / 2; // Convert player's screen position to world position
         int playerWorldY = mapY + getHeight() / 2;
         for (Enemy enemy : enemies) {
             enemy.moveTowardsPlayer(playerWorldX, playerWorldY);
+
         }
     }
+
+
     private void updateAmmo(){
         for(AmmoBox box : ammoBoxes){
             int width=getWidth()/2;
@@ -298,7 +316,11 @@ public class GamePanel extends JPanel implements Runnable {
             box.y-=box.getY(mapY)+getHeight()/2;
         }
     }
+    private void spawnEbull(int x, int y){
 
+        Point target=player.getpoint(getWidth()/2,getHeight()/2);
+        ebullets.add(new EnemyBullets(x, y, target));
+    }
     private void spawnEnemy() {
         Random rand = new Random();
         int x, y;
@@ -317,9 +339,15 @@ public class GamePanel extends JPanel implements Runnable {
             y = rand.nextInt(validHeight + validMapY);
         }
         enemies.add(new Enemy(x, y));
+
         System.out.println("Enemy spawned at: " + x + ", " + y); // Debug
     }
-
+    private void enemyshoot(){
+     for(Enemy enemy: enemies) {
+        Timer enemyshoot = new Timer(3000, _ ->spawnEbull(enemy.x-mapX, enemy.y-mapY));
+        enemyshoot.start();
+        }
+    }
     private void updateChunks() {
         adjustedX = mapX + getWidth() / 2;
         adjustedY = mapY + getHeight() / 2;
@@ -403,6 +431,7 @@ public class GamePanel extends JPanel implements Runnable {
         lastUpdateTime = currentTime;
     }
 
+
     @Override
     public void run() {
 
@@ -411,6 +440,9 @@ public class GamePanel extends JPanel implements Runnable {
         enemySpawner.start();
         Timer BoxSpawner = new Timer(5000, _ ->spawnAmmoBoxes());
         BoxSpawner.start();
+        Timer enemyshooter = new Timer(1000, _ ->enemyshoot());
+        enemyshooter.start();
+
 
         while (true) {
             updateDeltaTime();
@@ -420,6 +452,8 @@ public class GamePanel extends JPanel implements Runnable {
             updateAmmo();
             SwingUtilities.invokeLater(this::repaint);
             updateFPS();
+
+
 
             try {
                 Thread.sleep(16); // Target ~60 FPS

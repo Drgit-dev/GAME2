@@ -155,5 +155,7 @@ public class Player {
         return stats;
 
     }
-
+    static Point getpoint(int x,int  y){
+        return new Point(x,y);
+    }
 }
