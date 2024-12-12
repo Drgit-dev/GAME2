@@ -292,7 +292,6 @@ public class GamePanel extends JPanel implements Runnable {
     }
     private void updateEBullets(double dx, double dy) {
         ebullets.removeIf(enemyBullets  -> {
-            int speed = 650;
             enemyBullets.move(dx,dy);
             return enemyBullets.isOutOfBounds(getWidth(), getHeight());
         });
@@ -303,7 +302,6 @@ public class GamePanel extends JPanel implements Runnable {
         int playerWorldY = mapY + getHeight() / 2;
         for (Enemy enemy : enemies) {
             enemy.moveTowardsPlayer(playerWorldX, playerWorldY);
-
         }
     }
 
