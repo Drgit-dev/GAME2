@@ -293,7 +293,7 @@ public class GamePanel extends JPanel implements Runnable {
         ebullets.removeIf(enemyBullets  -> {
             int speed = 650;
             enemyBullets.move(dx,dy);
-            return false;
+            return enemyBullets.isOutOfBounds(getWidth(), getHeight());
         });
     }
 
