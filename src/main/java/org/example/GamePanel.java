@@ -15,6 +15,7 @@ public class GamePanel extends JPanel implements Runnable {
     private Set<Point> chunksActivos = new HashSet<>();
     private Map<Point, Chunk> chunkMap = new HashMap<>();
     private final List<Bullet> bullets;  // Lista para almacenar las balas
+    int bullet_history = 0;
     private final List<Enemy> enemies;
     private final List<AmmoBox> ammoBoxes ;// Lista para almacenar las balas
 
@@ -78,6 +79,7 @@ public class GamePanel extends JPanel implements Runnable {
                     //System.out.println("Mouse pressed at: " + target);
                      ///System.out.println("Pressed mouse, the bullets should shoot");
                      bullets.add(new Bullet(getWidth() / 2, getHeight() / 2, target));
+                     bullet_history += 1;
                      //System.out.println("Bullet created: " + bullets.size() + " bullets in the list.");
                       //playerStats[4]--;//reduce the bullet count
 
@@ -207,6 +209,7 @@ public class GamePanel extends JPanel implements Runnable {
         g2d.drawString("Chunk: X " + CurrentChunkX + "   Y " + CurrentChunkY, 10, 70);
         g2d.drawString("Coords: X " + adjustedX + "   Y " + adjustedY, 10, 110);
         g2d.drawString("Angle: " + player.getAngle(), 10, 150);
+        g2d.drawString("Bullets: " + bullet_history, 10, 300);
         ui.render(g2d,playerStats[0], playerStats[1], playerStats[2], playerStats[3], playerStats[4]);
     }
 
@@ -275,7 +278,6 @@ public class GamePanel extends JPanel implements Runnable {
 
     private void updateBullets(double dx, double dy) {
         bullets.removeIf(bullet -> {
-            int speed = 650;
             bullet.move(dx,dy);
             System.out.println("Bullet position: (" + bullet.getX() + ", " + bullet.getY() + ")");
             return bullet.isOutOfBounds(getWidth(), getHeight());
@@ -290,14 +292,11 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
     private void updateAmmo(){
-
         for(AmmoBox box : ammoBoxes){
             int width=getWidth()/2;
             int height=getHeight()/2;
             box.x-=box.getX(mapX)+getWidth()/2;
             box.y-=box.getY(mapY)+getHeight()/2;
-
-
         }
     }
 

@@ -24,7 +24,7 @@ public class Bullet {
     }
 
     public boolean isOutOfBounds(int width, int height) {
-        return x < 0 || x > width || y < 0 || y > height;
+        return x <= 0 || x >= width || y <= 0 || y >= height;
     }
 
     public void draw(Graphics2D g2d) {
