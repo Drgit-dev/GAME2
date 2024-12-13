@@ -12,7 +12,7 @@ public class Main {
         int option = sc.nextInt();
         switch (option) {
             case 1:
-                System.out.println("Choose a class\n1.Human\n2.Mage\n3.Ogre");
+                System.out.println("Choose a class\n0.Human\n1.Mage\n2.Ogre");
                 int choice = sc.nextInt();
                     GamePanel gamePanel = new GamePanel(choice);
                      Window window = new Window("Game with FPS Counter and Rotating Sprite", gamePanel);
