@@ -79,7 +79,7 @@ public class GamePanel extends JPanel implements Runnable {
             @Override
             public void mousePressed(MouseEvent e) {
 
-                  //if(playerStats[4]>0){// if ammo is 0 you cannot shoot (uncomment this for limited bullets
+                  if(playerStats[4]>0&&playerStats[2]>0){// if ammo is 0 you cannot shoot (uncomment this for limited bullets
                     // Crear una nueva bala cuando el jugador haga clic
                     Point target = e.getPoint();
                     //System.out.println("Mouse pressed at: " + target);
@@ -89,11 +89,12 @@ public class GamePanel extends JPanel implements Runnable {
                      playerStats[2]--;
 
                      //System.out.println("Bullet created: " + bullets.size() + " bullets in the list.");
-                      //playerStats[4]--;//reduce the bullet count
+                      playerStats[4]--;//reduce the bullet count
 
-                    //}
-                    // if(playerStats[4]<=0){// so the bullet count is not null
-                    //playerStats[4]=0;
+                    }
+                    if(playerStats[4]<=0) {// so the bullet count is not null
+                        playerStats[4] = 0;
+                    }
                 }
 
 
@@ -436,7 +437,11 @@ public class GamePanel extends JPanel implements Runnable {
         deltaTime = (currentTime - lastUpdateTime) / 1_000_000_000.0;
         lastUpdateTime = currentTime;
     }
-
+    public void regenMana(){
+        if(playerStats[2]<playerStats[3]) {
+            playerStats[2] += 5;
+        }
+    }
 
     @Override
     public void run() {
@@ -448,7 +453,7 @@ public class GamePanel extends JPanel implements Runnable {
         BoxSpawner.start();
         Timer enemyshooter = new Timer(1000, _ ->enemyshoot());
         enemyshooter.start();
-        Timer regenMana = new Timer(2000, _ ->playerStats[2]+=5);
+        Timer regenMana = new Timer(2000, _ ->regenMana());
         regenMana.start();
 
 
