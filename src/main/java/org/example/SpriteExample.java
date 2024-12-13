@@ -16,7 +16,7 @@ public class SpriteExample extends JPanel {
     public SpriteExample(String spriteOrder) {
         try {
             // Carga el spritesheet desde el archivo
-            spriteSheet = ImageIO.read(new File("src/main/resources/spritesheet.png"));
+            spriteSheet = ImageIO.read(new File("src/main/resources/tiles.png"));
 
             // Divide el spritesheet en sprites individuales según el string de entrada
             int spriteCount = spriteSheet.getWidth() / spriteWidth; // Asume sprites en una fila
