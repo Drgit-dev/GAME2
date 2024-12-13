@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+
+
 public class GamePanel extends JPanel implements Runnable {
     private Set<Point> chunksActivos = new HashSet<>();
     private Map<Point, Chunk> chunkMap = new HashMap<>();
@@ -42,12 +44,12 @@ public class GamePanel extends JPanel implements Runnable {
 
     private Player player;
     private GUI ui;
+    int type;
 
-    int type=2;
     int[] playerStats = new int[5];
 
 
-    public GamePanel() {
+    public GamePanel(int choice) {
         setBackground(Color.WHITE);
         setFocusable(true);
         setDoubleBuffered(true);
@@ -57,7 +59,7 @@ public class GamePanel extends JPanel implements Runnable {
         enemies = new ArrayList<>();
         ammoBoxes = new ArrayList<>();
         ebullets = new ArrayList<>();
-
+        int type = choice;
 
         // Initialize player
         player = new Player(getWidth() / 2, getHeight() / 2,playerStats);
@@ -81,6 +83,8 @@ public class GamePanel extends JPanel implements Runnable {
                      ///System.out.println("Pressed mouse, the bullets should shoot");
                      bullets.add(new Bullet(getWidth() / 2, getHeight() / 2, target));
                      bullet_history += 1;
+                     playerStats[2]--;
+
                      //System.out.println("Bullet created: " + bullets.size() + " bullets in the list.");
                       //playerStats[4]--;//reduce the bullet count
 
@@ -440,6 +444,9 @@ public class GamePanel extends JPanel implements Runnable {
         BoxSpawner.start();
         Timer enemyshooter = new Timer(1000, _ ->enemyshoot());
         enemyshooter.start();
+        Timer regenMana = new Timer(2000, _ ->playerStats[2]+=5);
+        regenMana.start();
+
 
 
         while (true) {
