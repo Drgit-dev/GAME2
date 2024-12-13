@@ -13,7 +13,7 @@ import javax.imageio.ImageIO;
 
 public class Player {
     private double angle = 0; // Rotation angle (now unused)
-   public final int spriteWidth = 64, spriteHeight = 64; // Changed sprite size to 64x64
+    public final int spriteWidth = 64, spriteHeight = 64; // Changed sprite size to 64x64
     private int spriterow;
     private int spritecol;
     private static final String PATH_TO_TILE_SPRITESHEET =

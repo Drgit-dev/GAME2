@@ -43,6 +43,7 @@ public class GamePanel extends JPanel implements Runnable {
     private final ExecutorService executorService = Executors.newFixedThreadPool(3);
 
     private Player player;
+    private Bow bow;
     private GUI ui;
     int type;
 
@@ -63,12 +64,14 @@ public class GamePanel extends JPanel implements Runnable {
 
         // Initialize player
         player = new Player(getWidth() / 2, getHeight() / 2,playerStats);
+        bow = new Bow(getWidth() / 2, getHeight() / 2);
         playerStats= player.getStats(type);
 
         ui=new GUI();
         // Add event listeners
         addKeyListener(player.getKeyListener(this));
         addMouseMotionListener(player.getMouseMotionListener(this));
+        addMouseMotionListener(bow.getMouseMotionListener(this));
 
         // Añadimos un MouseListener para detectar clics
         addMouseListener(new MouseAdapter() {
@@ -127,6 +130,7 @@ public class GamePanel extends JPanel implements Runnable {
         // Draw player at the center of the screen
         player.calculateDirection(player.getAngle());
         player.draw(g2d, getWidth() / 2, getHeight() / 2);
+        bow.draw(g2d,0,0);
         long endTime = System.nanoTime();
         long renderTime = (endTime - startTime) / 1_000_000; // Convert to milliseconds
         System.out.println("Render time: " + renderTime);
