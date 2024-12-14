@@ -8,6 +8,7 @@ import java.awt.event.MouseEvent;
 import java.awt.image.VolatileImage;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -15,17 +16,17 @@ import java.util.concurrent.Executors;
 
 public class GamePanel extends JPanel implements Runnable {
     private Set<Point> chunksActivos = new HashSet<>();
-    private Map<Point, Chunk> chunkMap = new HashMap<>();
+    private final Map<Point, Chunk> chunkMap = new HashMap<>();
     private final List<Bullet> bullets;  // Lista para almacenar las balas
     int bullet_history = 0;
     private final List<Enemy> enemies;
     private final List<AmmoBox> ammoBoxes ;// Lista para almacenar las balas
-    private final List<EnemyBullets> ebullets;
+    //private final List<EnemyBullets> ebullets;
+    private CopyOnWriteArrayList<EnemyBullets> ebullets;
     private int mapX = 0, mapY = 0; // Map offset
     int adjustedX, adjustedY;
     private final int ChunkSize = 16;
     private final int SpriteSize = 64;
-    private final int ChunkRadius = 1; // Distancia en chunks desde el jugador para activar
     private final int ChunkSizePixels = ChunkSize * SpriteSize;
 
     public boolean upPressed = false, downPressed = false, leftPressed = false, rightPressed = false;
@@ -42,10 +43,9 @@ public class GamePanel extends JPanel implements Runnable {
     // Creamos un pool de hilos (pool de hilos con 4 hilos en este caso)
     private final ExecutorService executorService = Executors.newFixedThreadPool(3);
 
-    private Player player;
-    private Bow bow;
-    private GUI ui;
-    int type;
+    private final Player player;
+    private final Bow bow;
+    private final GUI ui;
 
     int[] playerStats = new int[5];
 
@@ -59,13 +59,13 @@ public class GamePanel extends JPanel implements Runnable {
         bullets = new ArrayList<>();
         enemies = new ArrayList<>();
         ammoBoxes = new ArrayList<>();
-        ebullets = new ArrayList<>();
-        int type = choice;
+        //ebullets = new ArrayList<>();
+        ebullets = new CopyOnWriteArrayList<>();
 
         // Initialize player
         player = new Player(getWidth() / 2, getHeight() / 2,playerStats);
         bow = new Bow(getWidth() / 2, getHeight() / 2);
-        playerStats= player.getStats(type);
+        playerStats= player.getStats(choice);
 
         ui=new GUI();
         // Add event listeners
@@ -83,8 +83,7 @@ public class GamePanel extends JPanel implements Runnable {
                     // Crear una nueva bala cuando el jugador haga clic
                     Point target = e.getPoint();
                     //System.out.println("Mouse pressed at: " + target);
-                     ///System.out.println("Pressed mouse, the bullets should shoot");
-                     bullets.add(new Bullet(getWidth() / 2, getHeight() / 2, target));
+                      bullets.add(new Bullet(getWidth() / 2, getHeight() / 2, target));
                      bullet_history += 1;
                      playerStats[2]--;
 
@@ -194,7 +193,7 @@ public class GamePanel extends JPanel implements Runnable {
             box.draw(g, box.getAbsoluteX(mapX), box.getAbsoluteY(mapY));
         }
     }
-    private void openAmmoBoxes1(){
+    private void openAmmoBoxes(){
         for (AmmoBox box : ammoBoxes) {
             if (box.openedByPlayer(player, mapX, mapY, getWidth() /2, getHeight()/2)) {
                 System.out.println("The ammobox has been opened by the player at: (" + box.x + ", " + box.y + ")");
@@ -206,7 +205,7 @@ public class GamePanel extends JPanel implements Runnable {
             }
         }
     }
-    private void openAmmoBoxes(){
+    private void openAmmoBoxes1(){
         // Use an Iterator to safely remove boxes
         Iterator<AmmoBox> ammoBoxIterator = ammoBoxes.iterator();
 
@@ -218,7 +217,6 @@ public class GamePanel extends JPanel implements Runnable {
                     playerStats[4] += 5;
                     box.ammoRewardGiven = true;
 
-                    //Remove the box from the list, after is opened and gave reward
                     ammoBoxIterator.remove();
                 }
 
@@ -355,10 +353,6 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
-    private void updateAmmoBoxesPosition(){
-
-    }
-
     private void spawnEbull(int x, int y){
 
         Point target= Player.getpoint(getWidth()/2,getHeight()/2);
@@ -408,8 +402,10 @@ public class GamePanel extends JPanel implements Runnable {
     private void updateActiveChunks() {
         Set<Point> nuevosChunks = new HashSet<>();
 
-        for (int x = CurrentChunkX - ChunkRadius; x <= CurrentChunkX + ChunkRadius; x++) {
-            for (int y = CurrentChunkY - ChunkRadius; y <= CurrentChunkY + ChunkRadius; y++) {
+        // Distancia en chunks desde el jugador para activar
+        int chunkRadius = 1;
+        for (int x = CurrentChunkX - chunkRadius; x <= CurrentChunkX + chunkRadius; x++) {
+            for (int y = CurrentChunkY - chunkRadius; y <= CurrentChunkY + chunkRadius; y++) {
                 nuevosChunks.add(new Point(x, y));
             }
         }
@@ -493,7 +489,6 @@ public class GamePanel extends JPanel implements Runnable {
         regenMana.start();
 
 
-
         while (true) {
             updateDeltaTime();
             updateMovement();
@@ -503,7 +498,6 @@ public class GamePanel extends JPanel implements Runnable {
             updateAmmoBoxes();
             SwingUtilities.invokeLater(this::repaint);
             updateFPS();
-
 
 
             try {
