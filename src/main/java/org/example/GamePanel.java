@@ -8,6 +8,7 @@ import java.awt.event.MouseEvent;
 import java.awt.image.VolatileImage;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -15,17 +16,17 @@ import java.util.concurrent.Executors;
 
 public class GamePanel extends JPanel implements Runnable {
     private Set<Point> chunksActivos = new HashSet<>();
-    private Map<Point, Chunk> chunkMap = new HashMap<>();
+    private final Map<Point, Chunk> chunkMap = new HashMap<>();
     private final List<Bullet> bullets;  // Lista para almacenar las balas
     int bullet_history = 0;
     private final List<Enemy> enemies;
     private final List<AmmoBox> ammoBoxes ;// Lista para almacenar las balas
-    private final List<EnemyBullets> ebullets;
+    //private final List<EnemyBullets> ebullets;
+    private CopyOnWriteArrayList<EnemyBullets> ebullets;
     private int mapX = 0, mapY = 0; // Map offset
     int adjustedX, adjustedY;
     private final int ChunkSize = 16;
     private final int SpriteSize = 64;
-    private final int ChunkRadius = 1; // Distancia en chunks desde el jugador para activar
     private final int ChunkSizePixels = ChunkSize * SpriteSize;
 
     public boolean upPressed = false, downPressed = false, leftPressed = false, rightPressed = false;
@@ -42,10 +43,9 @@ public class GamePanel extends JPanel implements Runnable {
     // Creamos un pool de hilos (pool de hilos con 4 hilos en este caso)
     private final ExecutorService executorService = Executors.newFixedThreadPool(3);
 
-    private Player player;
-    private Bow bow;
-    private GUI ui;
-    int type;
+    private final Player player;
+    private final Bow bow;
+    private final GUI ui;
 
     int[] playerStats = new int[5];
 
@@ -60,13 +60,13 @@ public class GamePanel extends JPanel implements Runnable {
         bullets = new ArrayList<>();
         enemies = new ArrayList<>();
         ammoBoxes = new ArrayList<>();
-        ebullets = new ArrayList<>();
-        int type = choice;
+        //ebullets = new ArrayList<>();
+        ebullets = new CopyOnWriteArrayList<>();
 
         // Initialize player
         player = new Player(getWidth() / 2, getHeight() / 2, playerStats);
         bow = new Bow(getWidth() / 2, getHeight() / 2);
-        playerStats = player.getStats(type);
+        playerStats= player.getStats(choice);
 
         ui = new GUI();
 
@@ -77,13 +77,29 @@ public class GamePanel extends JPanel implements Runnable {
 
         // Añadimos un MouseListener para detectar clics
         addMouseListener(new MouseAdapter() {
+
             @Override
             public void mousePressed(MouseEvent e) {
-                Point target = e.getPoint();
-                bullets.add(new Bullet(getWidth() / 2, getHeight() / 2, target));
-                bullet_history += 1;
-                playerStats[2]--;
-            }
+
+                  if(playerStats[4]>0&&playerStats[2]>0){// if ammo is 0 you cannot shoot (uncomment this for limited bullets
+                    // Crear una nueva bala cuando el jugador haga clic
+                    Point target = e.getPoint();
+                    //System.out.println("Mouse pressed at: " + target);
+                      bullets.add(new Bullet(getWidth() / 2, getHeight() / 2, target));
+                     bullet_history += 1;
+                     playerStats[2]--;
+
+                     //System.out.println("Bullet created: " + bullets.size() + " bullets in the list.");
+                      playerStats[4]--;//reduce the bullet count
+
+                    }
+                    if(playerStats[4]<=0) {// so the bullet count is not null
+                        playerStats[4] = 0;
+                    }
+                }
+
+
+
         });
 
         // KeyListener para alternar f3On con F3
@@ -187,20 +203,54 @@ public class GamePanel extends JPanel implements Runnable {
     private void spawnAmmoBoxes(){
         Random rand = new Random();
         int x, y;
-        x =rand.nextInt(500);
-        y =rand.nextInt(500);
-        ammoBoxes.add(new AmmoBox(x-mapX,y-mapY));
+        x =rand.nextInt(10000) - 5000;  // This generates a random number
+        y =rand.nextInt(10000) - 5000;  // between -5000 and 4999
+        ammoBoxes.add(new AmmoBox(x,y));
         System.out.println("AmmoBox spawned at: " + x + ", " + y); // Debug
     }
     private void drawAmmoBoxes(Graphics2D g) {
 
          for (AmmoBox box : ammoBoxes) {
-            box.draw(g,box.x-mapX, box.y-mapY);
+             System.out.println("Drawing AmmoBox at (" + box.getAbsoluteX(mapX) + ", " + box.getAbsoluteY(mapY) + ") State: " + (box.isOpened ? "Opened" : "Closed"));
+            box.draw(g, box.getAbsoluteX(mapX), box.getAbsoluteY(mapY));
+        }
+    }
+    private void openAmmoBoxes(){
+        for (AmmoBox box : ammoBoxes) {
+            if (box.openedByPlayer(player, mapX, mapY, getWidth() /2, getHeight()/2)) {
+                System.out.println("The ammobox has been opened by the player at: (" + box.x + ", " + box.y + ")");
+                if (!box.ammoRewardGiven) {
+                    playerStats[4] += 5;
+                    box.ammoRewardGiven = true;
+                }
+                box.openBox();
+            }
+        }
+    }
+    private void openAmmoBoxes1(){
+        // Use an Iterator to safely remove boxes
+        Iterator<AmmoBox> ammoBoxIterator = ammoBoxes.iterator();
+
+        while(ammoBoxIterator.hasNext()) {
+            AmmoBox box = ammoBoxIterator.next();
+            if (box.openedByPlayer(player, mapX, mapY, getWidth() / 2, getHeight() / 2)) {
+                System.out.println("The ammobox has been opened by the player at: (" + box.x + ", " + box.y + ")");
+                if (!box.ammoRewardGiven) {
+                    playerStats[4] += 5;
+                    box.ammoRewardGiven = true;
+
+                    ammoBoxIterator.remove();
+                }
+
+            }
         }
     }
 
+
+
     private void checkCollisions() {
 
+        openAmmoBoxes();
         Iterator<Bullet> bulletIterator = bullets.iterator();
 
         while (bulletIterator.hasNext()) {
@@ -218,8 +268,6 @@ public class GamePanel extends JPanel implements Runnable {
                 }
 
             }
-
-
         }
     }
 
@@ -319,17 +367,16 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
 
-    private void updateAmmo(){
+    private void updateAmmoBoxes(){
         for(AmmoBox box : ammoBoxes){
-            int width=getWidth()/2;
-            int height=getHeight()/2;
-            box.x-=box.getX(mapX)+getWidth()/2;
-            box.y-=box.getY(mapY)+getHeight()/2;
+            box.x = box.originalX - mapX;
+            box.y = box.originalY - mapY;
         }
     }
+
     private void spawnEbull(int x, int y){
 
-        Point target=player.getpoint(getWidth()/2,getHeight()/2);
+        Point target= Player.getpoint(getWidth()/2,getHeight()/2);
         ebullets.add(new EnemyBullets(x, y, target));
     }
     private void spawnEnemy() {
@@ -376,8 +423,10 @@ public class GamePanel extends JPanel implements Runnable {
     private void updateActiveChunks() {
         Set<Point> nuevosChunks = new HashSet<>();
 
-        for (int x = CurrentChunkX - ChunkRadius; x <= CurrentChunkX + ChunkRadius; x++) {
-            for (int y = CurrentChunkY - ChunkRadius; y <= CurrentChunkY + ChunkRadius; y++) {
+        // Distancia en chunks desde el jugador para activar
+        int chunkRadius = 1;
+        for (int x = CurrentChunkX - chunkRadius; x <= CurrentChunkX + chunkRadius; x++) {
+            for (int y = CurrentChunkY - chunkRadius; y <= CurrentChunkY + chunkRadius; y++) {
                 nuevosChunks.add(new Point(x, y));
             }
         }
@@ -441,7 +490,11 @@ public class GamePanel extends JPanel implements Runnable {
         deltaTime = (currentTime - lastUpdateTime) / 1_000_000_000.0;
         lastUpdateTime = currentTime;
     }
-
+    public void regenMana(){
+        if(playerStats[2]<playerStats[3]) {
+            playerStats[2] += 5;
+        }
+    }
 
     @Override
     public void run() {
@@ -453,9 +506,8 @@ public class GamePanel extends JPanel implements Runnable {
         BoxSpawner.start();
         Timer enemyshooter = new Timer(1000, _ ->enemyshoot());
         enemyshooter.start();
-        Timer regenMana = new Timer(2000, _ ->playerStats[2]+=5);
+        Timer regenMana = new Timer(2000, _ ->regenMana());
         regenMana.start();
-
 
 
         while (true) {
@@ -463,10 +515,10 @@ public class GamePanel extends JPanel implements Runnable {
             updateMovement();
             updateEnemies();
             checkCollisions();
-            updateAmmo();
+
+            updateAmmoBoxes();
             SwingUtilities.invokeLater(this::repaint);
             updateFPS();
-
 
 
             try {

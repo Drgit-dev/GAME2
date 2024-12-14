@@ -16,6 +16,7 @@ public class Main {
                 int choice = sc.nextInt();
                     GamePanel gamePanel = new GamePanel(choice);
                      Window window = new Window("Game with FPS Counter and Rotating Sprite", gamePanel);
+                     // window is not used guys
                      Thread gameThread = new Thread(gamePanel);
                      gameThread.start();
                 break;

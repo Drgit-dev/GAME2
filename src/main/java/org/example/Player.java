@@ -19,7 +19,7 @@ public class Player {
     private static final String PATH_TO_TILE_SPRITESHEET =
             "src/main/resources/player/player_sprites.png"; // Path to the sprite sheet
     private BufferedImage spriteSheet;
-    private int numberofframes = 3;
+    private final int numberofframes = 3;
     int type=0;
     int[] stats =new int[5];
 
