@@ -12,7 +12,7 @@ public class ChunkGenerator {
         for (int i = -5; i < 5; i++) {
             for (int j = -5; j < 5; j++) {
                 String fileName = "chunk_" + i + "_" + j + ".txt";
-                generateChunkFile(fileName);
+                //generateChunkFile(fileName); NO TOCAR
             }
         }
     }

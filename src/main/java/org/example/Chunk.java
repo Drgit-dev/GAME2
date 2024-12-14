@@ -74,6 +74,14 @@ public class Chunk {
                     }
                 }
             }
+
+            for (int row = 0; row < TILE_SIZE && scanner.hasNextLine(); row++) {
+                String line = scanner.nextLine();
+                for (int col = 0; col < line.length(); col++) {
+                    char tileChar = line.charAt(col);
+                    //System.out.println("Line " + (31 + row) + ", Column " + col + ": Character '" + tileChar + "'");
+                }
+            }
             //g2d.dispose();
         } catch (IOException e) {
             throw new RuntimeException(e);

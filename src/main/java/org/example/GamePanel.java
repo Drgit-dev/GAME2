@@ -49,6 +49,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     int[] playerStats = new int[5];
 
+    private boolean f3On = false; // Variable para el estado de F3
 
     public GamePanel(int choice) {
         setBackground(Color.WHITE);
@@ -63,11 +64,12 @@ public class GamePanel extends JPanel implements Runnable {
         int type = choice;
 
         // Initialize player
-        player = new Player(getWidth() / 2, getHeight() / 2,playerStats);
+        player = new Player(getWidth() / 2, getHeight() / 2, playerStats);
         bow = new Bow(getWidth() / 2, getHeight() / 2);
-        playerStats= player.getStats(type);
+        playerStats = player.getStats(type);
 
-        ui=new GUI();
+        ui = new GUI();
+
         // Add event listeners
         addKeyListener(player.getKeyListener(this));
         addMouseMotionListener(player.getMouseMotionListener(this));
@@ -75,31 +77,25 @@ public class GamePanel extends JPanel implements Runnable {
 
         // Añadimos un MouseListener para detectar clics
         addMouseListener(new MouseAdapter() {
-
             @Override
             public void mousePressed(MouseEvent e) {
-
-                  //if(playerStats[4]>0){// if ammo is 0 you cannot shoot (uncomment this for limited bullets
-                    // Crear una nueva bala cuando el jugador haga clic
-                    Point target = e.getPoint();
-                    //System.out.println("Mouse pressed at: " + target);
-                     ///System.out.println("Pressed mouse, the bullets should shoot");
-                     bullets.add(new Bullet(getWidth() / 2, getHeight() / 2, target));
-                     bullet_history += 1;
-                     playerStats[2]--;
-
-                     //System.out.println("Bullet created: " + bullets.size() + " bullets in the list.");
-                      //playerStats[4]--;//reduce the bullet count
-
-                    //}
-                    // if(playerStats[4]<=0){// so the bullet count is not null
-                    //playerStats[4]=0;
-                }
-
-
-
+                Point target = e.getPoint();
+                bullets.add(new Bullet(getWidth() / 2, getHeight() / 2, target));
+                bullet_history += 1;
+                playerStats[2]--;
+            }
         });
 
+        // KeyListener para alternar f3On con F3
+        addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent e) {
+                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_F3) {
+                    f3On = !f3On; // Cambia entre true y false
+                    System.out.println("F3 toggled: " + f3On);
+                }
+            }
+        });
     }
 
     @Override
@@ -115,8 +111,12 @@ public class GamePanel extends JPanel implements Runnable {
         // Dibujar los tiles
         drawTiles(g2d);
 
-        // Draw active chunks
-        drawChunks(g2d);
+        if (f3On) {
+            // Draw active chunks
+            drawChunks(g2d);
+            // Draw HUD (FPS, coordinates, etc.)
+            drawHUD(g2d);
+        }
 
         // Dibujar las balas
         drawBullets(g2d);
@@ -124,8 +124,8 @@ public class GamePanel extends JPanel implements Runnable {
         drawEnemies(g2d);
         drawAmmoBoxes(g2d);
         drawEnemybull(g2d);
-        // Draw HUD (FPS, coordinates, etc.)
-        drawHUD(g2d);
+
+        ui.render(g2d,playerStats[0], playerStats[1], playerStats[2], playerStats[3], playerStats[4]);
 
         // Draw player at the center of the screen
         player.calculateDirection(player.getAngle());
@@ -143,13 +143,19 @@ public class GamePanel extends JPanel implements Runnable {
             int chunkScreenX = chunk.x * ChunkSizePixels - mapX;
             int chunkScreenY = chunk.y * ChunkSizePixels - mapY;
 
-            // Draw chunk border
-            g2d.setColor(new Color(100, 100, 100, 100));
+            // Draw chunk border with thicker stroke
+            g2d.setColor(new Color(255, 0, 0, 255));
+            Stroke originalStroke = g2d.getStroke(); // Save the original stroke
+            g2d.setStroke(new BasicStroke(3)); // Set a thicker stroke
             g2d.drawRect(chunkScreenX, chunkScreenY, ChunkSizePixels, ChunkSizePixels);
+            g2d.setStroke(originalStroke); // Restore the original stroke
 
-            // Label each chunk with its coordinates
+            // Label each chunk with larger font
             g2d.setColor(Color.RED);
+            Font originalFont = g2d.getFont(); // Save the original font
+            g2d.setFont(new Font("Arial", Font.BOLD, 20)); // Set a larger font
             g2d.drawString("Chunk (" + chunk.x + ", " + chunk.y + ")", chunkScreenX + 5, chunkScreenY + 20);
+            g2d.setFont(originalFont); // Restore the original font
         }
     }
 
@@ -225,7 +231,6 @@ public class GamePanel extends JPanel implements Runnable {
         g2d.drawString("Coords: X " + adjustedX + "   Y " + adjustedY, 10, 110);
         g2d.drawString("Angle: " + player.getAngle(), 10, 150);
         g2d.drawString("Bullets: " + bullet_history, 10, 300);
-        ui.render(g2d,playerStats[0], playerStats[1], playerStats[2], playerStats[3], playerStats[4]);
     }
 
     private void drawTiles(Graphics2D g2d) {
