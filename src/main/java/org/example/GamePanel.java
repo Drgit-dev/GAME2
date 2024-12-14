@@ -182,29 +182,51 @@ public class GamePanel extends JPanel implements Runnable {
     private void spawnAmmoBoxes(){
         Random rand = new Random();
         int x, y;
-        x =rand.nextInt(500);
-        y =rand.nextInt(500);
-        //ammoBoxes.add(new AmmoBox(x-mapX,y-mapY));
+        x =rand.nextInt(10000) - 5000;  // This generates a random number
+        y =rand.nextInt(10000) - 5000;  // between -5000 and 4999
         ammoBoxes.add(new AmmoBox(x,y));
         System.out.println("AmmoBox spawned at: " + x + ", " + y); // Debug
     }
     private void drawAmmoBoxes(Graphics2D g) {
 
          for (AmmoBox box : ammoBoxes) {
-             System.out.println("Drawing AmmoBox at (" + box.x + ", " + box.y + ") State: " + (box.isOpened ? "Opened" : "Closed"));
-            box.draw(g,box.x-mapX, box.y-mapY);
+             System.out.println("Drawing AmmoBox at (" + box.getAbsoluteX(mapX) + ", " + box.getAbsoluteY(mapY) + ") State: " + (box.isOpened ? "Opened" : "Closed"));
+            box.draw(g, box.getAbsoluteX(mapX), box.getAbsoluteY(mapY));
         }
     }
-    private void openAmmoBoxes(){
+    private void openAmmoBoxes1(){
         for (AmmoBox box : ammoBoxes) {
             if (box.openedByPlayer(player, mapX, mapY, getWidth() /2, getHeight()/2)) {
                 System.out.println("The ammobox has been opened by the player at: (" + box.x + ", " + box.y + ")");
-                playerStats[4] += 5;
+                if (!box.ammoRewardGiven) {
+                    playerStats[4] += 5;
+                    box.ammoRewardGiven = true;
+                }
                 box.openBox();
-                //box.drawOpened(g, box.x - mapX, box.y - mapY);
             }
         }
     }
+    private void openAmmoBoxes(){
+        // Use an Iterator to safely remove boxes
+        Iterator<AmmoBox> ammoBoxIterator = ammoBoxes.iterator();
+
+        while(ammoBoxIterator.hasNext()) {
+            AmmoBox box = ammoBoxIterator.next();
+            if (box.openedByPlayer(player, mapX, mapY, getWidth() / 2, getHeight() / 2)) {
+                System.out.println("The ammobox has been opened by the player at: (" + box.x + ", " + box.y + ")");
+                if (!box.ammoRewardGiven) {
+                    playerStats[4] += 5;
+                    box.ammoRewardGiven = true;
+
+                    //Remove the box from the list, after is opened and gave reward
+                    ammoBoxIterator.remove();
+                }
+
+            }
+        }
+    }
+
+
 
     private void checkCollisions() {
 
@@ -328,12 +350,15 @@ public class GamePanel extends JPanel implements Runnable {
 
     private void updateAmmoBoxes(){
         for(AmmoBox box : ammoBoxes){
-            int width=getWidth()/2;
-            int height=getHeight()/2;
-            box.x-=box.getX(mapX)+getWidth()/2;
-            box.y-=box.getY(mapY)+getHeight()/2;
+            box.x = box.originalX - mapX;
+            box.y = box.originalY - mapY;
         }
     }
+
+    private void updateAmmoBoxesPosition(){
+
+    }
+
     private void spawnEbull(int x, int y){
 
         Point target= Player.getpoint(getWidth()/2,getHeight()/2);
