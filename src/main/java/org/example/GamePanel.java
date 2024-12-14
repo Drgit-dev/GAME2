@@ -184,18 +184,31 @@ public class GamePanel extends JPanel implements Runnable {
         int x, y;
         x =rand.nextInt(500);
         y =rand.nextInt(500);
-        ammoBoxes.add(new AmmoBox(x-mapX,y-mapY));
+        //ammoBoxes.add(new AmmoBox(x-mapX,y-mapY));
+        ammoBoxes.add(new AmmoBox(x,y));
         System.out.println("AmmoBox spawned at: " + x + ", " + y); // Debug
     }
     private void drawAmmoBoxes(Graphics2D g) {
 
          for (AmmoBox box : ammoBoxes) {
+             System.out.println("Drawing AmmoBox at (" + box.x + ", " + box.y + ") State: " + (box.isOpened ? "Opened" : "Closed"));
             box.draw(g,box.x-mapX, box.y-mapY);
+        }
+    }
+    private void openAmmoBoxes(){
+        for (AmmoBox box : ammoBoxes) {
+            if (box.openedByPlayer(player, mapX, mapY, getWidth() /2, getHeight()/2)) {
+                System.out.println("The ammobox has been opened by the player at: (" + box.x + ", " + box.y + ")");
+                playerStats[4] += 5;
+                box.openBox();
+                //box.drawOpened(g, box.x - mapX, box.y - mapY);
+            }
         }
     }
 
     private void checkCollisions() {
 
+        openAmmoBoxes();
         Iterator<Bullet> bulletIterator = bullets.iterator();
 
         while (bulletIterator.hasNext()) {
@@ -213,8 +226,6 @@ public class GamePanel extends JPanel implements Runnable {
                 }
 
             }
-
-
         }
     }
 
@@ -315,7 +326,7 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
 
-    private void updateAmmo(){
+    private void updateAmmoBoxes(){
         for(AmmoBox box : ammoBoxes){
             int width=getWidth()/2;
             int height=getHeight()/2;
@@ -325,7 +336,7 @@ public class GamePanel extends JPanel implements Runnable {
     }
     private void spawnEbull(int x, int y){
 
-        Point target=player.getpoint(getWidth()/2,getHeight()/2);
+        Point target= Player.getpoint(getWidth()/2,getHeight()/2);
         ebullets.add(new EnemyBullets(x, y, target));
     }
     private void spawnEnemy() {
@@ -463,7 +474,8 @@ public class GamePanel extends JPanel implements Runnable {
             updateMovement();
             updateEnemies();
             checkCollisions();
-            updateAmmo();
+
+            updateAmmoBoxes();
             SwingUtilities.invokeLater(this::repaint);
             updateFPS();
 
