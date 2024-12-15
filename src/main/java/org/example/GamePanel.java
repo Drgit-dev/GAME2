@@ -424,8 +424,6 @@ public class GamePanel extends JPanel implements Runnable {
             y = rand.nextInt(validHeight + validMapY);
         }
         enemies.add(new Enemy(x, y));
-
-        System.out.println("Enemy spawned at: " + x + ", " + y); // Debug
     }
 
     private void enemyshoot(){
