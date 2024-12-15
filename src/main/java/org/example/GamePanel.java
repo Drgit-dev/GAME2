@@ -41,8 +41,6 @@ public class GamePanel extends JPanel implements Runnable {
     private double deltaTime = 0; // DeltaTime variable (en segundos)
     private long lastUpdateTime = System.nanoTime(); // Último tiempo de actualización para deltaTime
     private final Map<Enemy, Timer> enemyTimers;
-     int enemyCount=50;
-     int killcount=0;
 
 
     // Creamos un pool de hilos (pool de hilos con 4 hilos en este caso)
@@ -148,7 +146,7 @@ public class GamePanel extends JPanel implements Runnable {
         drawAmmoBoxes(g2d);
         drawEnemybull(g2d);
 
-        ui.render(g2d,playerStats[0], playerStats[1], playerStats[2], playerStats[3], playerStats[4],killcount);
+        ui.render(g2d,playerStats[0], playerStats[1], playerStats[2], playerStats[3], playerStats[4]);
 
         // Draw player at the center of the screen
         player.calculateDirection(player.getAngle());
@@ -252,18 +250,6 @@ public class GamePanel extends JPanel implements Runnable {
             }
         }
     }
-    private void checkEnemyHit(){
-        Iterator<EnemyBullets> enemyBulletsIterator = ebullets.iterator();
-        while(enemyBulletsIterator.hasNext()) {
-            EnemyBullets ebullet =enemyBulletsIterator.next();
-            if (ebullet.intersects(player, mapX, mapY, getWidth() / 2, getHeight() / 2)) {
-                    playerStats[0]-=5;
-
-                }
-
-            }
-        }
-
 
 
 
@@ -560,7 +546,6 @@ public class GamePanel extends JPanel implements Runnable {
             updateMovement();
             updateEnemies();
             checkCollisions();
-            checkEnemyHit();
 
             updateAmmoBoxes();
             SwingUtilities.invokeLater(this::repaint);
