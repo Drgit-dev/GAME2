@@ -53,7 +53,8 @@ public class GamePanel extends JPanel implements Runnable {
     int[] playerStats = new int[5];
 
     private boolean f3On = false; // Variable para el estado de F3
-
+    int enemycount=50;
+    int killcount=0;
     public GamePanel(int choice) {
         setBackground(Color.WHITE);
         setFocusable(true);
@@ -146,7 +147,7 @@ public class GamePanel extends JPanel implements Runnable {
         drawAmmoBoxes(g2d);
         drawEnemybull(g2d);
 
-        ui.render(g2d,playerStats[0], playerStats[1], playerStats[2], playerStats[3], playerStats[4]);
+        ui.render(g2d,playerStats[0], playerStats[1], playerStats[2], playerStats[3], playerStats[4],enemycount);
 
         // Draw player at the center of the screen
         player.calculateDirection(player.getAngle());
