@@ -211,8 +211,8 @@ public class GamePanel extends JPanel implements Runnable {
     private void spawnBoxes(){
         Random rand = new Random();
         int x, y;
-        x =rand.nextInt(10001) - 5000;  // This generates a random number
-        y =rand.nextInt(10001) - 5000;  // between -5000 and 5000
+        x =rand.nextInt(1001) - 500;  // This generates a random number
+        y =rand.nextInt(1001) - 500;  // between -5000 and 5000
         if (rand.nextBoolean()) {
             ammoBoxes.add(new AmmoBox(x, y));
         }   else {
@@ -231,68 +231,54 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
-    private void openAmmoBoxesAndDeleteIfOpen(){
+    private void openBoxesAndDeleteIfOpen() {
         long currentTime = System.currentTimeMillis();
-        // Use an Iterator to safely remove boxes
-        Iterator<AmmoBox> ammoBoxIterator = ammoBoxes.iterator();
 
+        // Handle AmmoBoxes
+        Iterator<AmmoBox> ammoBoxIterator = ammoBoxes.iterator();
         while(ammoBoxIterator.hasNext()) {
             AmmoBox box = ammoBoxIterator.next();
             if (box.openedByPlayer(player, mapX, mapY, getWidth() / 2, getHeight() / 2)) {
                 if (box.markedForDeletion == 0) {
                     if (!box.ammoRewardGiven) {
-                        playerStats[0] = Math.min(playerStats[0]+20, playerStats[1]);
+                        playerStats[4] += 5;
                         box.ammoRewardGiven = true;
-
-                        //ammoBoxIterator.remove();
                     }
                     box.markedForDeletion = currentTime;
-                }   else {
+                } else {
                     if (currentTime - box.markedForDeletion > 20000) {
-                       ammoBoxIterator.remove();
-                        //System.out.println("Ammobox removed after 20 seconds");
+                        ammoBoxIterator.remove();
                     }
                 }
-
             }
         }
-    }
-    private void openHealBoxesAndDeleteIfOpen(){
-        long currentTime = System.currentTimeMillis();
-        // Use an Iterator to safely remove boxes
-        Iterator<HealBox> healBoxIterator = healBoxes.iterator();
 
+        // Handle HealBoxes
+        Iterator<HealBox> healBoxIterator = healBoxes.iterator();
         while(healBoxIterator.hasNext()) {
             HealBox box = healBoxIterator.next();
             if (box.openedByPlayer(player, mapX, mapY, getWidth() / 2, getHeight() / 2)) {
                 if (box.markedForDeletion == 0) {
                     if (!box.ammoRewardGiven) {
-                        playerStats[4] += 5;
+                        playerStats[0] = Math.min(playerStats[0] + 5, playerStats[1]);
                         box.ammoRewardGiven = true;
-
-                        //ammoBoxIterator.remove();
                     }
                     box.markedForDeletion = currentTime;
-                }   else {
+                } else {
                     if (currentTime - box.markedForDeletion > 20000) {
-                       healBoxIterator.remove();
-                        //System.out.println("Ammobox removed after 20 seconds");
+                        healBoxIterator.remove();
                     }
                 }
-
             }
         }
     }
-
 
 
 
 
     private void checkCollisions() {
 
-        //openAmmoBoxes();
-        openAmmoBoxesAndDeleteIfOpen();
-        openHealBoxesAndDeleteIfOpen();
+        openBoxesAndDeleteIfOpen();
         Iterator<Bullet> bulletIterator = bullets.iterator();
 
         while (bulletIterator.hasNext()) {
