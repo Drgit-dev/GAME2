@@ -253,9 +253,7 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
     private void checkEnemyHit(){
-        // Use an Iterator to safely remove boxes
         Iterator<EnemyBullets> enemyBulletsIterator = ebullets.iterator();
-
         while(enemyBulletsIterator.hasNext()) {
             EnemyBullets ebullet =enemyBulletsIterator.next();
             if (ebullet.intersects(player, mapX, mapY, getWidth() / 2, getHeight() / 2)) {
