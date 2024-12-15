@@ -20,9 +20,10 @@ public class GamePanel extends JPanel implements Runnable {
     private final List<Bullet> bullets;  // Lista para almacenar las balas
     int bullet_history = 0;
     private final List<Enemy> enemies;
+    //private final CopyOnWriteArrayList<Enemy> enemies;
     private final List<AmmoBox> ammoBoxes ;// Lista para almacenar las balas
-    //private final List<EnemyBullets> ebullets;
-    private CopyOnWriteArrayList<EnemyBullets> ebullets;
+    private final List<EnemyBullets> ebullets;
+    //private final CopyOnWriteArrayList<EnemyBullets> ebullets;
     private int mapX = 0, mapY = 0; // Map offset
     int adjustedX, adjustedY;
     private final int ChunkSize = 16;
@@ -39,7 +40,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     private double deltaTime = 0; // DeltaTime variable (en segundos)
     private long lastUpdateTime = System.nanoTime(); // Último tiempo de actualización para deltaTime
-    private Map<Enemy, Timer> enemyTimers;
+    private final Map<Enemy, Timer> enemyTimers;
 
 
     // Creamos un pool de hilos (pool de hilos con 4 hilos en este caso)
@@ -61,6 +62,7 @@ public class GamePanel extends JPanel implements Runnable {
         // Inicializamos las listas de balas y enemigos Y cajas de municiones
         bullets = new ArrayList<>();
         enemies = new ArrayList<>();
+        //enemies = new CopyOnWriteArrayList<>();
         ammoBoxes = new ArrayList<>();
         //ebullets = new ArrayList<>();
         ebullets = new CopyOnWriteArrayList<>();
@@ -206,8 +208,8 @@ public class GamePanel extends JPanel implements Runnable {
     private void spawnAmmoBoxes(){
         Random rand = new Random();
         int x, y;
-        x =rand.nextInt(10000) - 5000;  // This generates a random number
-        y =rand.nextInt(10000) - 5000;  // between -5000 and 4999
+        x =rand.nextInt(10001) - 5000;  // This generates a random number
+        y =rand.nextInt(10001) - 5000;  // between -5000 and 5000
         ammoBoxes.add(new AmmoBox(x,y));
         System.out.println("AmmoBox spawned at: " + x + ", " + y); // Debug
     }
@@ -230,7 +232,7 @@ public class GamePanel extends JPanel implements Runnable {
             }
         }
     }
-    private void openAmmoBoxes1(){
+    private void openAmmoBoxesAndDeleteIfOpen(){
         // Use an Iterator to safely remove boxes
         Iterator<AmmoBox> ammoBoxIterator = ammoBoxes.iterator();
 
@@ -369,8 +371,24 @@ public class GamePanel extends JPanel implements Runnable {
     private void updateEnemies() {
         int playerWorldX = mapX + getWidth() / 2; // Convert player's screen position to world position
         int playerWorldY = mapY + getHeight() / 2;
-        for (Enemy enemy : enemies) {
-            enemy.moveTowardsPlayer(playerWorldX, playerWorldY);
+
+        // Use synchronized block to avoid concurrent modification issues
+        synchronized (enemies) {
+            for (Iterator<Enemy> iterator = enemies.iterator(); iterator.hasNext(); ) {
+                Enemy enemy = iterator.next();
+
+                if (enemy != null) { // Null-check enemy instance
+                    try {
+                        enemy.moveTowardsPlayer(playerWorldX, playerWorldY);
+                    } catch (Exception e) {
+                        System.err.println("Error updating enemy: " + enemy);
+                        e.printStackTrace();
+                    }
+                } else {
+                    System.err.println("Encountered null enemy. Removing from list.");
+                    iterator.remove(); // Remove null enemies to maintain a clean list
+                }
+            }
         }
     }
 

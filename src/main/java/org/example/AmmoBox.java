@@ -1,30 +1,61 @@
 package org.example;
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 public class AmmoBox {
     int x;
     int y;
     int originalX;
     int originalY;
-    int Width=50;
-    int Height=50;
+    int Width=64;
+    int Height=64;
     boolean isOpened = false;
     boolean ammoRewardGiven = false;
+
+    private static BufferedImage spriteSheet;
+
     public AmmoBox(int x, int y) {
         this.x = x;
         this.y = y;
         this.originalX = x;
         this.originalY = y;
-    }
-    public void draw(Graphics g, int screenX, int screenY) {
 
-        if (isOpened) {
-            g.setColor(Color.cyan);
-            g.fillRect(x, y, Width, Height);
+        LoadChestImage();
+    }
+
+    private void LoadChestImage() {
+        if (spriteSheet == null) {
+            try {
+                spriteSheet = ImageIO.read(new File("src/main/resources/sprites/chest.png"));
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.err.println("Could not load chest sprite sheet!");
+            }
         }
-        else {
-            g.setColor(Color.magenta);
-            g.fillRect(x, y, Width, Height);
+    }
+    // Method to get a specific section of the sprite sheet
+    public BufferedImage getSubImage(boolean isOpened) {
+
+        int spriteIndex = isOpened ? 2 : 0; // Use 0 for closed, 2 for opened
+        //int row = isOpened ? 1 : 0
+        return spriteSheet.getSubimage(spriteIndex * Width, 0 * Height, Width, Height);
+    }
+
+    public void draw(Graphics g, int screenX, int screenY) {
+        if (spriteSheet != null) {
+            BufferedImage currentSprite = isOpened ? getSubImage(true) : getSubImage(false);
+            g.drawImage(currentSprite, x, y, null);
+        } else {
+            if (isOpened) {
+                g.setColor(Color.cyan);
+                g.fillRect(x, y, Width, Height);
+            } else {
+                g.setColor(Color.magenta);
+                g.fillRect(x, y, Width, Height);
+            }
         }
     }
 
