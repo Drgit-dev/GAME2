@@ -16,7 +16,7 @@ public class AmmoBox {
     boolean ammoRewardGiven = false;
     long markedForDeletion = 0;
 
-    private static BufferedImage spriteSheet;
+    protected static BufferedImage spriteSheet;
 
     public AmmoBox(int x, int y) {
         this.x = x;
