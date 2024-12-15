@@ -23,7 +23,7 @@ public class GUI {
         g2d.setColor(Color.BLACK);
         g2d.fillRect(15, 700, 128, 128);
         g2d.drawString("WEAPON", 15, 695);
-        g2d.drawString("ENEMIES LEFT"+ enemies, 15, 270);
+        g2d.drawString("ENEMIES LEFT"+ enemies, 15, 280);
 
     }
 }
