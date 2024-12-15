@@ -2,10 +2,12 @@ package org.example;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.util.Random;
 
 public class Enemy {
     int x, y;
-    private static final int SPEED = 2;
+    Random random = new Random();
+    private final int SPEED = random.nextInt(10)+2;
     static final int SIZE = 40;
 
     //private Timer shootingTimer;

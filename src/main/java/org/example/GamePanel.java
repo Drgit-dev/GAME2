@@ -90,10 +90,10 @@ public class GamePanel extends JPanel implements Runnable {
                     //System.out.println("Mouse pressed at: " + target);
                       bullets.add(new Bullet(getWidth() / 2, getHeight() / 2, target));
                      bullet_history += 1;
-                     playerStats[2]--;
+                     //playerStats[2]--;
 
                      //System.out.println("Bullet created: " + bullets.size() + " bullets in the list.");
-                      playerStats[4]--;//reduce the bullet count
+                      //playerStats[4]--;//reduce the bullet count
 
                     }
                     if(playerStats[4]<=0) {// so the bullet count is not null
