@@ -251,7 +251,15 @@ public class GamePanel extends JPanel implements Runnable {
             }
         }
     }
-
+ private void checkenemyhit(){
+     Iterator<EnemyBullets> EbulletIterator = ebullets.iterator();
+     while(EbulletIterator.hasNext()) {
+         EnemyBullets ebullet = EbulletIterator.next();
+         if(ebullet.intersects(player,mapX,mapY,getWidth()/2,getHeight()/2)){
+             playerStats[0]-=4;
+         }
+     }
+ }
 
 
     private void checkCollisions() {
