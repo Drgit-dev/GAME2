@@ -16,7 +16,7 @@ public class AmmoBox {
     boolean ammoRewardGiven = false;
     long markedForDeletion = 0;
 
-    protected static BufferedImage spriteSheet;
+    private static BufferedImage spriteSheet;
 
     public AmmoBox(int x, int y) {
         this.x = x;
@@ -64,10 +64,6 @@ public class AmmoBox {
         isOpened = true;
     }
 
-    public boolean isOpened() {
-        return isOpened;
-    }
-
 
     public boolean openedByPlayer(Player player, int mapX, int mapY, int centerX, int centerY) {
         if (isOpened) return true;
@@ -76,10 +72,9 @@ public class AmmoBox {
 
         Rectangle ammoBoxBounds = new Rectangle(ammoBoxWorldX, ammoBoxWorldY, Width, Height);
         Rectangle playerBounds = new Rectangle(centerX+mapX, centerY+mapY, 64, 64);  // 64 is the player size
-        /*System.out.println("Checking collision:"
+        System.out.println("Checking collision:"
                 + "\nAmmoBox bounds: " + ammoBoxBounds
                 + "\nPlayer bounds: " + playerBounds);
-        */
         isOpened = ammoBoxBounds.intersects(playerBounds);
         if (isOpened) {
             System.out.println("AmmoBox was opened!");

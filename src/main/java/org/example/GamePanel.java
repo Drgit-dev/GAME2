@@ -149,7 +149,7 @@ public class GamePanel extends JPanel implements Runnable {
 
         drawEnemybull(g2d);
 
-        ui.render(g2d,playerStats[0], playerStats[1], playerStats[2], playerStats[3], playerStats[4]);
+        ui.render(g2d,playerStats[0], playerStats[1], playerStats[2], playerStats[3], playerStats[4], 50);
 
         // Draw player at the center of the screen
         player.calculateDirection(player.getAngle());
@@ -211,8 +211,8 @@ public class GamePanel extends JPanel implements Runnable {
     private void spawnBoxes(){
         Random rand = new Random();
         int x, y;
-        x =rand.nextInt(1001) - 500;  // This generates a random number
-        y =rand.nextInt(1001) - 500;  // between -5000 and 5000
+        x =rand.nextInt(10001) - 5000;  // This generates a random number
+        y =rand.nextInt(10001) - 5000;  // between -5000 and 5000
         if (rand.nextBoolean()) {
             ammoBoxes.add(new AmmoBox(x, y));
         }   else {
@@ -236,6 +236,7 @@ public class GamePanel extends JPanel implements Runnable {
 
         // Handle AmmoBoxes
         Iterator<AmmoBox> ammoBoxIterator = ammoBoxes.iterator();
+
         while(ammoBoxIterator.hasNext()) {
             AmmoBox box = ammoBoxIterator.next();
             if (box.openedByPlayer(player, mapX, mapY, getWidth() / 2, getHeight() / 2)) {
@@ -269,6 +270,7 @@ public class GamePanel extends JPanel implements Runnable {
                         healBoxIterator.remove();
                     }
                 }
+
             }
         }
     }
