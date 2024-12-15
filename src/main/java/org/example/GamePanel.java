@@ -257,6 +257,7 @@ public class GamePanel extends JPanel implements Runnable {
          EnemyBullets ebullet = EbulletIterator.next();
          if(ebullet.intersects(player,mapX,mapY,getWidth()/2,getHeight()/2)){
              playerStats[0]-=4;
+
          }
      }
  }
@@ -555,7 +556,7 @@ public class GamePanel extends JPanel implements Runnable {
             updateMovement();
             updateEnemies();
             checkCollisions();
-
+            checkenemyhit();
             updateAmmoBoxes();
             SwingUtilities.invokeLater(this::repaint);
             updateFPS();
