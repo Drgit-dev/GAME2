@@ -2,7 +2,7 @@ package org.example;
 import java.awt.*;
 public class GUI {
 
-    public void render(Graphics g2d, int HP, int HPMAX, int MP, int MPMAX, int AMMO){
+    public void render(Graphics g2d, int HP, int HPMAX, int MP, int MPMAX, int AMMO, int enemies){
         g2d.setColor(Color.gray);
         g2d.fillRect(15,150,HPMAX,32);
         g2d.setColor(Color.green);
@@ -23,6 +23,7 @@ public class GUI {
         g2d.setColor(Color.BLACK);
         g2d.fillRect(15, 700, 128, 128);
         g2d.drawString("WEAPON", 15, 695);
+        g2d.drawString("ENEMIES LEFT"+ enemies, 15, 270);
 
     }
 }

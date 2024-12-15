@@ -6,11 +6,14 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.VolatileImage;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.io.File;
 
 
 
@@ -41,14 +44,15 @@ public class GamePanel extends JPanel implements Runnable {
     private double deltaTime = 0; // DeltaTime variable (en segundos)
     private long lastUpdateTime = System.nanoTime(); // Último tiempo de actualización para deltaTime
     private final Map<Enemy, Timer> enemyTimers;
-
-
+    int enemyCount=50;
+    int killCount=0;
     // Creamos un pool de hilos (pool de hilos con 4 hilos en este caso)
     private final ExecutorService executorService = Executors.newFixedThreadPool(3);
 
     private final Player player;
     private final Bow bow;
     private final GUI ui;
+
 
     int[] playerStats = new int[5];
 
@@ -92,10 +96,10 @@ public class GamePanel extends JPanel implements Runnable {
                     //System.out.println("Mouse pressed at: " + target);
                       bullets.add(new Bullet(getWidth() / 2, getHeight() / 2, target));
                      bullet_history += 1;
-                     //playerStats[2]--;
+                     playerStats[2]--;
 
                      //System.out.println("Bullet created: " + bullets.size() + " bullets in the list.");
-                      //playerStats[4]--;//reduce the bullet count
+                      playerStats[4]--;//reduce the bullet count
 
                     }
                     if(playerStats[4]<=0) {// so the bullet count is not null
@@ -144,9 +148,23 @@ public class GamePanel extends JPanel implements Runnable {
         // Dibujar los enemigos
         drawEnemies(g2d);
         drawAmmoBoxes(g2d);
-        drawEnemybull(g2d);
+        drawEnemybull(g2d) ;
 
-        ui.render(g2d,playerStats[0], playerStats[1], playerStats[2], playerStats[3], playerStats[4]);
+        try {
+            LoseGame(g2d);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        try {
+            winGame();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        ui.render(g2d,playerStats[0], playerStats[1], playerStats[2], playerStats[3], playerStats[4],enemyCount);
 
         // Draw player at the center of the screen
         player.calculateDirection(player.getAngle());
@@ -179,7 +197,29 @@ public class GamePanel extends JPanel implements Runnable {
             g2d.setFont(originalFont); // Restore the original font
         }
     }
+    private void LoseGame(Graphics2D g2d) throws IOException {
+        if (playerStats[0] <= 0) {
+            System.out.println("\n" +
+                    "░▒▓█▓▒░░▒▓█▓▒░  ░▒▓██████▓▒░  ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░         ░▒▓██████▓▒░   ░▒▓███████▓▒░ ░▒▓████████▓▒░ \n" +
+                    "░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░        ░▒▓█▓▒░        \n" +
+                    "░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░        ░▒▓█▓▒░        \n" +
+                    " ░▒▓██████▓▒░  ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░  ░▒▓██████▓▒░  ░▒▓██████▓▒░   \n" +
+                    "   ░▒▓█▓▒░     ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░        ░▒▓█▓▒░ ░▒▓█▓▒░        \n" +
+                    "   ░▒▓█▓▒░     ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░        ░▒▓█▓▒░ ░▒▓█▓▒░        \n" +
+                    "   ░▒▓█▓▒░      ░▒▓██████▓▒░   ░▒▓██████▓▒░        ░▒▓████████▓▒░  ░▒▓██████▓▒░  ░▒▓███████▓▒░  ░▒▓████████▓▒░ \n" +
+                    "                                                                                                               \n" +
+                    "                                                                                                               \n");
 
+                        FileWriter myWriter = new FileWriter("log.txt");
+                        myWriter.write("Game Lost Kills: "+ killCount);
+                        myWriter.close();
+                        System.out.println("Successfully saved results to file");
+
+
+
+        System.exit(0);
+        }
+    }
     private void drawBullets(Graphics2D g2d) {
 
             for (Bullet bullet : bullets) {
@@ -250,6 +290,19 @@ public class GamePanel extends JPanel implements Runnable {
             }
         }
     }
+    private void checkHitPlayer() {
+
+            Iterator<EnemyBullets> ebulletIterator=ebullets.iterator();
+            while(ebulletIterator.hasNext()) {
+                EnemyBullets ebullet = ebulletIterator.next();
+                if (ebullet.intersects(player, mapX, mapY, getWidth()/2, getHeight()/2)){
+                    playerStats[0] -= 5;
+                    break;  // Exit loop since bullet can only hit one enemy
+
+
+                }
+            }
+    }
 
 
 
@@ -266,6 +319,8 @@ public class GamePanel extends JPanel implements Runnable {
                 if (bullet.intersects(enemy, mapX, mapY)) {
                     enemyIterator.remove(); // Safely remove enemy
                     bulletIterator.remove();
+                    enemyCount--;
+                    killCount++;
                     // Stop the associated timer:
                     if (enemyTimers.containsKey(enemy)) {
                         enemyTimers.get(enemy).stop();
@@ -281,6 +336,7 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
+
     private void drawHUD(Graphics2D g2d) {
         g2d.setFont(new Font("Arial", Font.BOLD | Font.ITALIC, 30));
         g2d.setColor(Color.BLACK);
@@ -290,7 +346,28 @@ public class GamePanel extends JPanel implements Runnable {
         g2d.drawString("Angle: " + player.getAngle(), 10, 150);
         g2d.drawString("Bullets: " + bullet_history, 10, 300);
     }
+    private void winGame() throws IOException {
+        if(playerStats[0]>0 && enemyCount==0) {
+            System.out.println("\n" +
+                    "░▒▓█▓▒░░▒▓█▓▒░  ░▒▓██████▓▒░  ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓███████▓▒░  \n" +
+                    "░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ \n" +
+                    "░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ \n" +
+                    " ░▒▓██████▓▒░  ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ \n" +
+                    "   ░▒▓█▓▒░     ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ \n" +
+                    "   ░▒▓█▓▒░     ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ \n" +
+                    "   ░▒▓█▓▒░      ░▒▓██████▓▒░   ░▒▓██████▓▒░         ░▒▓█████████████▓▒░  ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ \n" +
+                    "                                                                                                \n" +
+                    "                                                                                                \n");
 
+
+        FileWriter myWriter = new FileWriter("log.txt");
+        myWriter.write("Game Won Kills: "+killCount);
+        myWriter.close();
+        System.out.println("Successfully saved results to file");
+        System.exit(0);
+    }
+
+    }
     private void drawTiles(Graphics2D g2d) {
         for (Point chunkPos : chunksActivos) {
             Chunk chunk = chunkMap.get(chunkPos);
@@ -337,7 +414,6 @@ public class GamePanel extends JPanel implements Runnable {
         updateChunks();
         updateBullets(moveX,moveY);
         updateEBullets(moveX,moveY);
-        System.out.println("Updatemovement");
 
         //Separar esto que es nuevo
         // Check if player is moving (either moveX or moveY is not zero)
@@ -528,10 +604,10 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     @Override
-    public void run() {
+    public void run() {a
 
         // Start the enemy spawner timer
-        Timer enemySpawner = new Timer(2000, e -> spawnEnemy());
+        Timer enemySpawner = new Timer(4000, e -> spawnEnemy());
         enemySpawner.start();
         Timer BoxSpawner = new Timer(5000, _ ->spawnAmmoBoxes());
         BoxSpawner.start();
@@ -546,10 +622,11 @@ public class GamePanel extends JPanel implements Runnable {
             updateMovement();
             updateEnemies();
             checkCollisions();
-
+            checkHitPlayer();
             updateAmmoBoxes();
             SwingUtilities.invokeLater(this::repaint);
             updateFPS();
+
 
 
             try {
