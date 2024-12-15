@@ -12,8 +12,6 @@ public class EnemyBullets {
         this.x = startX;
         this.y = startY;
         this.angle =  Math.atan2(target.y - startY, target.x - startX);
-
-
     }
     public void move(double dx, double dy) {
         x += SPEED * Math.cos(angle);

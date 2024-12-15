@@ -9,9 +9,10 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.lang.Math;
 
 public class Bow {
-    public final int spriteWidth = 15, spriteHeight = 80;
+    public final int spriteWidth = 20, spriteHeight = 50;
     private int spriterow;
     private int spritecol;
     private static final String PATH_TO_TILE_SPRITESHEET = "";
@@ -27,17 +28,19 @@ public class Bow {
     }
 
     public void draw(Graphics2D g2d, int centerX, int centerY) {
-        // Guardar la transformación original para restaurarla después
+
+        //will use trignometry to make the bow offset a bit from the character
+        int offset = 30;
+        double dx = Math.cos(angle) * offset;
+        double dy = Math.sin(angle) * offset;
+
         AffineTransform originalTransform = g2d.getTransform();
-
-        // Rotar alrededor del centro de la pantalla
-        g2d.rotate(angle, centerX, centerY); // Rotar alrededor del centro especificado
-
-        // Dibujar un rectángulo representando el arco directamente en el centro
-        g2d.setColor(Color.BLUE); // Cambiar el color del arco
-        g2d.fillRect(centerX - spriteWidth / 2, centerY - spriteHeight / 2, spriteWidth, spriteHeight); // Dibujar centrado
-
-        // Restaurar la transformación original
+        g2d.rotate(angle, centerX+dx, centerY+dy);
+        g2d.setColor(Color.BLUE);
+        g2d.fillRect(
+                (int) (centerX + dx - spriteWidth / 2),
+                (int) (centerY + dy - spriteHeight / 2),
+                spriteWidth, spriteHeight);
         g2d.setTransform(originalTransform);
     }
 
