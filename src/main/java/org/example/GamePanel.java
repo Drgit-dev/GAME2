@@ -11,7 +11,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
+import java.io.FileWriter;   // Import the FileWriter class
+import java.io.IOException;  // Import the IOException class to handle errors
 
 
 public class GamePanel extends JPanel implements Runnable {
@@ -22,7 +23,6 @@ public class GamePanel extends JPanel implements Runnable {
     private final List<Enemy> enemies;
     //private final CopyOnWriteArrayList<Enemy> enemies;
     private final List<AmmoBox> ammoBoxes ;// Lista para almacenar las balas
-    private final List <HealBox> healBoxes;
     private final List<EnemyBullets> ebullets;
     //private final CopyOnWriteArrayList<EnemyBullets> ebullets;
     private int mapX = 0, mapY = 0; // Map offset
@@ -54,7 +54,8 @@ public class GamePanel extends JPanel implements Runnable {
     int[] playerStats = new int[5];
 
     private boolean f3On = false; // Variable para el estado de F3
-
+    int enemycount=50;
+    int killcount=0;
     public GamePanel(int choice) {
         setBackground(Color.WHITE);
         setFocusable(true);
@@ -65,7 +66,6 @@ public class GamePanel extends JPanel implements Runnable {
         enemies = new ArrayList<>();
         //enemies = new CopyOnWriteArrayList<>();
         ammoBoxes = new ArrayList<>();
-        healBoxes = new ArrayList<>();
         //ebullets = new ArrayList<>();
         ebullets = new CopyOnWriteArrayList<>();
         enemyTimers = new HashMap<>();  // To fix enemies shooting after death
@@ -94,10 +94,10 @@ public class GamePanel extends JPanel implements Runnable {
                     //System.out.println("Mouse pressed at: " + target);
                       bullets.add(new Bullet(getWidth() / 2, getHeight() / 2, target));
                      bullet_history += 1;
-                     //playerStats[2]--;
+                     playerStats[2]--;
 
                      //System.out.println("Bullet created: " + bullets.size() + " bullets in the list.");
-                      //playerStats[4]--;//reduce the bullet count
+                      playerStats[4]--;//reduce the bullet count
 
                     }
                     if(playerStats[4]<=0) {// so the bullet count is not null
@@ -120,7 +120,42 @@ public class GamePanel extends JPanel implements Runnable {
             }
         });
     }
-
+    private void winGame() throws IOException {
+        if(enemycount==0&&playerStats[0]>0){
+           System.out.println("\n" +
+                   "░▒▓█▓▒░░▒▓█▓▒░  ░▒▓██████▓▒░  ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓███████▓▒░  \n" +
+                   "░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ \n" +
+                   "░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ \n" +
+                   " ░▒▓██████▓▒░  ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ \n" +
+                   "   ░▒▓█▓▒░     ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ \n" +
+                   "   ░▒▓█▓▒░     ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ \n" +
+                   "   ░▒▓█▓▒░      ░▒▓██████▓▒░   ░▒▓██████▓▒░         ░▒▓█████████████▓▒░  ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ \n" +
+                   "                                                                                                \n" +
+                   "                                                                                                \n");
+            FileWriter myWriter = new FileWriter("log.txt");
+            myWriter.write("Game won kills: "+killcount+"\n");
+            myWriter.close();
+            System.exit(0);
+        }
+    }
+    private void loseGame() throws IOException {
+        if(playerStats[0]<=0){
+            System.out.println("\n" +
+                    "░▒▓█▓▒░░▒▓█▓▒░  ░▒▓██████▓▒░  ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░         ░▒▓██████▓▒░   ░▒▓███████▓▒░ ░▒▓████████▓▒░ \n" +
+                    "░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░        ░▒▓█▓▒░        \n" +
+                    "░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░        ░▒▓█▓▒░        \n" +
+                    " ░▒▓██████▓▒░  ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░  ░▒▓██████▓▒░  ░▒▓██████▓▒░   \n" +
+                    "   ░▒▓█▓▒░     ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░        ░▒▓█▓▒░ ░▒▓█▓▒░        \n" +
+                    "   ░▒▓█▓▒░     ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░        ░▒▓█▓▒░ ░▒▓█▓▒░        \n" +
+                    "   ░▒▓█▓▒░      ░▒▓██████▓▒░   ░▒▓██████▓▒░        ░▒▓████████▓▒░  ░▒▓██████▓▒░  ░▒▓███████▓▒░  ░▒▓████████▓▒░ \n" +
+                    "                                                                                                               \n" +
+                    "                                                                                                               \n");
+            FileWriter myWriter = new FileWriter("log.txt");
+            myWriter.write("Game Lost kills: "+killcount+"\n");
+            myWriter.close();
+            System.exit(0);
+        }
+    }
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -139,16 +174,26 @@ public class GamePanel extends JPanel implements Runnable {
             // Draw HUD (FPS, coordinates, etc.)
             drawHUD(g2d);
         }
+        try {
+            winGame();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            loseGame();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
 
         // Dibujar las balas
         drawBullets(g2d);
         // Dibujar los enemigos
         drawEnemies(g2d);
-        drawBoxes(g2d);
-
+        drawAmmoBoxes(g2d);
         drawEnemybull(g2d);
 
-        ui.render(g2d,playerStats[0], playerStats[1], playerStats[2], playerStats[3], playerStats[4], 50);
+        ui.render(g2d,playerStats[0], playerStats[1], playerStats[2], playerStats[3], playerStats[4],enemycount);
 
         // Draw player at the center of the screen
         player.calculateDirection(player.getAngle());
@@ -207,79 +252,66 @@ public class GamePanel extends JPanel implements Runnable {
             enemy.draw(g, screenX, screenY);
         }
     }
-    private void spawnBoxes(){
+    private void spawnAmmoBoxes(){
         Random rand = new Random();
         int x, y;
         x =rand.nextInt(10001) - 5000;  // This generates a random number
         y =rand.nextInt(10001) - 5000;  // between -5000 and 5000
-        if (rand.nextBoolean()) {
-            ammoBoxes.add(new AmmoBox(x, y));
-        }   else {
-            healBoxes.add(new HealBox(x, y));
-        }
+        ammoBoxes.add(new AmmoBox(x,y));
+        System.out.println("AmmoBox spawned at: " + x + ", " + y); // Debug
     }
-    private void drawBoxes(Graphics2D g) {
+    private void drawAmmoBoxes(Graphics2D g) {
 
          for (AmmoBox box : ammoBoxes) {
-             //System.out.println("Drawing AmmoBox at (" + box.getAbsoluteX(mapX) + ", " + box.getAbsoluteY(mapY) + ") State: " + (box.isOpened ? "Opened" : "Closed"));
-            box.draw(g, box.getAbsoluteX(mapX), box.getAbsoluteY(mapY));
-        }
-        for (HealBox box : healBoxes) {
-            //System.out.println("Drawing HealBox at (" + box.getAbsoluteX(mapX) + ", " + box.getAbsoluteY(mapY) + ") State: " + (box.isOpened ? "Opened" : "Closed"));
+             System.out.println("Drawing AmmoBox at (" + box.getAbsoluteX(mapX) + ", " + box.getAbsoluteY(mapY) + ") State: " + (box.isOpened ? "Opened" : "Closed"));
             box.draw(g, box.getAbsoluteX(mapX), box.getAbsoluteY(mapY));
         }
     }
-
-    private void openBoxesAndDeleteIfOpen() {
-        long currentTime = System.currentTimeMillis();
-
-        // Handle AmmoBoxes
+    private void openAmmoBoxes(){
+        for (AmmoBox box : ammoBoxes) {
+            if (box.openedByPlayer(player, mapX, mapY, getWidth() /2, getHeight()/2)) {
+                System.out.println("The ammobox has been opened by the player at: (" + box.x + ", " + box.y + ")");
+                if (!box.ammoRewardGiven) {
+                    playerStats[4] += 5;
+                    box.ammoRewardGiven = true;
+                }
+                box.openBox();
+            }
+        }
+    }
+    private void openAmmoBoxesAndDeleteIfOpen(){
+        // Use an Iterator to safely remove boxes
         Iterator<AmmoBox> ammoBoxIterator = ammoBoxes.iterator();
 
         while(ammoBoxIterator.hasNext()) {
             AmmoBox box = ammoBoxIterator.next();
             if (box.openedByPlayer(player, mapX, mapY, getWidth() / 2, getHeight() / 2)) {
-                if (box.markedForDeletion == 0) {
-                    if (!box.ammoRewardGiven) {
-                        playerStats[4] += 5;
-                        box.ammoRewardGiven = true;
-                    }
-                    box.markedForDeletion = currentTime;
-                } else {
-                    if (currentTime - box.markedForDeletion > 20000) {
-                        ammoBoxIterator.remove();
-                    }
-                }
-            }
-        }
+                System.out.println("The ammobox has been opened by the player at: (" + box.x + ", " + box.y + ")");
+                if (!box.ammoRewardGiven) {
+                    playerStats[4] += 5;
+                    box.ammoRewardGiven = true;
 
-        // Handle HealBoxes
-        Iterator<HealBox> healBoxIterator = healBoxes.iterator();
-        while(healBoxIterator.hasNext()) {
-            HealBox box = healBoxIterator.next();
-            if (box.openedByPlayer(player, mapX, mapY, getWidth() / 2, getHeight() / 2)) {
-                if (box.markedForDeletion == 0) {
-                    if (!box.ammoRewardGiven) {
-                        playerStats[0] = Math.min(playerStats[0] + 5, playerStats[1]);
-                        box.ammoRewardGiven = true;
-                    }
-                    box.markedForDeletion = currentTime;
-                } else {
-                    if (currentTime - box.markedForDeletion > 20000) {
-                        healBoxIterator.remove();
-                    }
+                    ammoBoxIterator.remove();
                 }
 
             }
         }
     }
+ private void checkenemyhit(){
+     Iterator<EnemyBullets> EbulletIterator = ebullets.iterator();
+     while(EbulletIterator.hasNext()) {
+         EnemyBullets ebullet = EbulletIterator.next();
+         if(ebullet.intersects(player,mapX,mapY,getWidth()/2,getHeight()/2)){
+             playerStats[0]-=4;
 
-
+         }
+     }
+ }
 
 
     private void checkCollisions() {
 
-        openBoxesAndDeleteIfOpen();
+        openAmmoBoxes();
         Iterator<Bullet> bulletIterator = bullets.iterator();
 
         while (bulletIterator.hasNext()) {
@@ -290,6 +322,8 @@ public class GamePanel extends JPanel implements Runnable {
                 if (bullet.intersects(enemy, mapX, mapY)) {
                     enemyIterator.remove(); // Safely remove enemy
                     bulletIterator.remove();
+                    enemycount--;
+                    killcount++;
                     // Stop the associated timer:
                     if (enemyTimers.containsKey(enemy)) {
                         enemyTimers.get(enemy).stop();
@@ -361,7 +395,7 @@ public class GamePanel extends JPanel implements Runnable {
         updateChunks();
         updateBullets(moveX,moveY);
         updateEBullets(moveX,moveY);
-        //System.out.println("Updatemovement");
+        System.out.println("Updatemovement");
 
         //Separar esto que es nuevo
         // Check if player is moving (either moveX or moveY is not zero)
@@ -417,12 +451,8 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
 
-    private void updateBoxes(){
+    private void updateAmmoBoxes(){
         for(AmmoBox box : ammoBoxes){
-            box.x = box.originalX - mapX;
-            box.y = box.originalY - mapY;
-        }
-        for(HealBox box : healBoxes){
             box.x = box.originalX - mapX;
             box.y = box.originalY - mapY;
         }
@@ -561,7 +591,7 @@ public class GamePanel extends JPanel implements Runnable {
         // Start the enemy spawner timer
         Timer enemySpawner = new Timer(2000, e -> spawnEnemy());
         enemySpawner.start();
-        Timer BoxSpawner = new Timer(5000, _ ->spawnBoxes());
+        Timer BoxSpawner = new Timer(5000, _ ->spawnAmmoBoxes());
         BoxSpawner.start();
         Timer enemyshooter = new Timer(1000, _ ->enemyshoot());
         enemyshooter.start();
@@ -574,8 +604,8 @@ public class GamePanel extends JPanel implements Runnable {
             updateMovement();
             updateEnemies();
             checkCollisions();
-
-            updateBoxes();
+            checkenemyhit();
+            updateAmmoBoxes();
             SwingUtilities.invokeLater(this::repaint);
             updateFPS();
 

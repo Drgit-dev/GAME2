@@ -1,0 +1,105 @@
+Index: src/main/java/org/example/GamePanel.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/example/GamePanel.java b/src/main/java/org/example/GamePanel.java
+--- a/src/main/java/org/example/GamePanel.java	(revision 70d1b9942239f2a28f334fde2cbc0ff0144a9d81)
++++ b/src/main/java/org/example/GamePanel.java	(revision 95241881a759ea3e047935d5ace4d5bd12a42479)
+@@ -11,6 +11,8 @@
+ import java.util.concurrent.ExecutorService;
+ import java.util.concurrent.Executors;
+ 
++
++
+ public class GamePanel extends JPanel implements Runnable {
+     private Set<Point> chunksActivos = new HashSet<>();
+     private Map<Point, Chunk> chunkMap = new HashMap<>();
+@@ -42,12 +44,12 @@
+ 
+     private Player player;
+     private GUI ui;
++    int type;
+ 
+-    int type=2;
+     int[] playerStats = new int[5];
+ 
+ 
+-    public GamePanel() {
++    public GamePanel(int choice) {
+         setBackground(Color.WHITE);
+         setFocusable(true);
+         setDoubleBuffered(true);
+@@ -57,7 +59,7 @@
+         enemies = new ArrayList<>();
+         ammoBoxes = new ArrayList<>();
+         ebullets = new ArrayList<>();
+-
++        int type = choice;
+ 
+         // Initialize player
+         player = new Player(getWidth() / 2, getHeight() / 2,playerStats);
+@@ -81,6 +83,8 @@
+                      ///System.out.println("Pressed mouse, the bullets should shoot");
+                      bullets.add(new Bullet(getWidth() / 2, getHeight() / 2, target));
+                      bullet_history += 1;
++                     playerStats[2]--;
++
+                      //System.out.println("Bullet created: " + bullets.size() + " bullets in the list.");
+                       //playerStats[4]--;//reduce the bullet count
+ 
+@@ -440,6 +444,9 @@
+         BoxSpawner.start();
+         Timer enemyshooter = new Timer(1000, _ ->enemyshoot());
+         enemyshooter.start();
++        Timer regenMana = new Timer(2000, _ ->playerStats[2]+=5);
++        regenMana.start();
++
+ 
+ 
+         while (true) {
+Index: src/main/java/org/example/Main.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/example/Main.java b/src/main/java/org/example/Main.java
+--- a/src/main/java/org/example/Main.java	(revision 70d1b9942239f2a28f334fde2cbc0ff0144a9d81)
++++ b/src/main/java/org/example/Main.java	(revision 95241881a759ea3e047935d5ace4d5bd12a42479)
+@@ -1,10 +1,29 @@
+ package org.example;
+-
++import java.util.Scanner;
+ public class Main {
+     public static void main(String[] args) {
+-        GamePanel gamePanel = new GamePanel();
+-        Window window = new Window("Game with FPS Counter and Rotating Sprite", gamePanel);
+-        Thread gameThread = new Thread(gamePanel);
+-        gameThread.start();
++        Scanner sc = new Scanner(System.in);
++        System.out.println("  __  __          _ _                 _   ____  _____  ");
++        System.out.println(" |  \\/  |        | (_)               | | |  _ \\|  __ \\ ");
++        System.out.println(" | \\  / | ___  __| |_  _____   ____ _| | | |_) | |__) |");
++        System.out.println(" | |  | |  __/ (_| | |  __/\\ V / (_| | | | |_) | | \\ \\ ");
++        System.out.println(" |_|  |_|\\___|\\__,_|_|\\___| \\_/ \\__,_|_| |____/|_|  \\_\\");
++        System.out.println("1.PLAY\n2.EXIT");
++        int option = sc.nextInt();
++        switch (option) {
++            case 1:
++                System.out.println("Choose a class\n1.Human\n2.Mage\n3.Ogre");
++                int choice = sc.nextInt();
++                    GamePanel gamePanel = new GamePanel(choice);
++                     Window window = new Window("Game with FPS Counter and Rotating Sprite", gamePanel);
++                     Thread gameThread = new Thread(gamePanel);
++                     gameThread.start();
++                break;
++                case 2:
++                    System.exit(0);
++        }
++
++
+     }
+-}
+\ No newline at end of file
++
++}
