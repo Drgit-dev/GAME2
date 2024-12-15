@@ -133,7 +133,6 @@ public class GamePanel extends JPanel implements Runnable {
 
         // Dibujar los tiles
         drawTiles(g2d);
-
         if (f3On) {
             // Draw active chunks
             drawChunks(g2d);

@@ -12,10 +12,10 @@ import javax.swing.*;
 import java.lang.Math;
 
 public class Bow {
-    public final int spriteWidth = 20, spriteHeight = 50;
+    public final int spriteWidth = 30, spriteHeight = 70;
     private int spriterow;
     private int spritecol;
-    private static final String PATH_TO_TILE_SPRITESHEET = "";
+    private static final String PATH_TO_TILE_SPRITESHEET = "src/main/resources/sprites/bow/bow_0.png";
     private double angle = 0; // Rotation angle
     private BufferedImage spriteSheet;
 
@@ -35,12 +35,12 @@ public class Bow {
         double dy = Math.sin(angle) * offset;
 
         AffineTransform originalTransform = g2d.getTransform();
-        g2d.rotate(angle, centerX+dx, centerY+dy);
-        g2d.setColor(Color.BLUE);
-        g2d.fillRect(
+        g2d.rotate(angle-Math.PI, centerX+dx, centerY+dy);
+        g2d.drawImage(
+                spriteSheet,
                 (int) (centerX + dx - spriteWidth / 2),
                 (int) (centerY + dy - spriteHeight / 2),
-                spriteWidth, spriteHeight);
+                spriteWidth,spriteHeight, null);
         g2d.setTransform(originalTransform);
     }
 
