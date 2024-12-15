@@ -72,9 +72,11 @@ public class AmmoBox {
 
         Rectangle ammoBoxBounds = new Rectangle(ammoBoxWorldX, ammoBoxWorldY, Width, Height);
         Rectangle playerBounds = new Rectangle(centerX+mapX, centerY+mapY, 64, 64);  // 64 is the player size
-        System.out.println("Checking collision:"
+        /*System.out.println("Checking collision:"
                 + "\nAmmoBox bounds: " + ammoBoxBounds
                 + "\nPlayer bounds: " + playerBounds);
+
+         */
         isOpened = ammoBoxBounds.intersects(playerBounds);
         if (isOpened) {
             System.out.println("AmmoBox was opened!");

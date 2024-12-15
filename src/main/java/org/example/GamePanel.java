@@ -309,7 +309,7 @@ public class GamePanel extends JPanel implements Runnable {
             if (box.openedByPlayer(player, mapX, mapY, getWidth() / 2, getHeight() / 2)) {
                 if (box.markedForDeletion == 0) {
                     if (!box.ammoRewardGiven) {
-                        playerStats[0] = Math.min(playerStats[0] + 5, playerStats[1]);
+                        playerStats[0] = Math.min(playerStats[0] + 10, playerStats[1]);
                         box.ammoRewardGiven = true;
                     }
                     box.markedForDeletion = currentTime;
@@ -494,6 +494,8 @@ public class GamePanel extends JPanel implements Runnable {
             ebullets.add(new EnemyBullets(x, y, target));
         }
     }
+
+
     private void spawnEnemy() {
         Random rand = new Random();
         int x, y;
@@ -511,10 +513,13 @@ public class GamePanel extends JPanel implements Runnable {
             x = rand.nextBoolean() ? validMapX - Enemy.SIZE : validMapX + validWidth;
             y = rand.nextInt(validHeight + validMapY);
         }
+        x = Math.max(-5000, Math.min(x, 5000));
+        y = Math.max(-5000, Math.min(y, 5000));
         enemies.add(new Enemy(x, y));
 
         System.out.println("Enemy spawned at: " + x + ", " + y); // Debug
     }
+
 
     private void enemyshoot(){
         for(Enemy enemy: enemies) {
