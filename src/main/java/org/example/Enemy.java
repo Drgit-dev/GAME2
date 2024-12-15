@@ -8,6 +8,8 @@ public class Enemy {
     private static final int SPEED = 2;
     static final int SIZE = 40;
 
+    //private Timer shootingTimer;
+
     public Enemy(int x, int y) {
         this.x = x;
         this.y = y;

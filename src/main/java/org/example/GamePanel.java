@@ -39,6 +39,8 @@ public class GamePanel extends JPanel implements Runnable {
 
     private double deltaTime = 0; // DeltaTime variable (en segundos)
     private long lastUpdateTime = System.nanoTime(); // Último tiempo de actualización para deltaTime
+    private Map<Enemy, Timer> enemyTimers;
+
 
     // Creamos un pool de hilos (pool de hilos con 4 hilos en este caso)
     private final ExecutorService executorService = Executors.newFixedThreadPool(3);
@@ -62,6 +64,7 @@ public class GamePanel extends JPanel implements Runnable {
         ammoBoxes = new ArrayList<>();
         //ebullets = new ArrayList<>();
         ebullets = new CopyOnWriteArrayList<>();
+        enemyTimers = new HashMap<>();  // To fix enemies shooting after death
 
         // Initialize player
         player = new Player(getWidth() / 2, getHeight() / 2, playerStats);
@@ -261,6 +264,11 @@ public class GamePanel extends JPanel implements Runnable {
                 if (bullet.intersects(enemy, mapX, mapY)) {
                     enemyIterator.remove(); // Safely remove enemy
                     bulletIterator.remove();
+                    // Stop the associated timer:
+                    if (enemyTimers.containsKey(enemy)) {
+                        enemyTimers.get(enemy).stop();
+                        enemyTimers.remove(enemy);
+                    }
                     // Safely remove bullet
                     break;  // Exit loop since bullet can only hit one enemy
 
@@ -374,10 +382,11 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
-    private void spawnEbull(int x, int y){
-
-        Point target= Player.getpoint(getWidth()/2,getHeight()/2);
-        ebullets.add(new EnemyBullets(x, y, target));
+    private void spawnEbull(int x, int y, Enemy enemy){
+        if (enemies.contains(enemy)) { // Check if the enemy is still alive
+            Point target= Player.getpoint(getWidth()/2,getHeight()/2);
+            ebullets.add(new EnemyBullets(x, y, target));
+        }
     }
     private void spawnEnemy() {
         Random rand = new Random();
@@ -400,10 +409,14 @@ public class GamePanel extends JPanel implements Runnable {
 
         System.out.println("Enemy spawned at: " + x + ", " + y); // Debug
     }
+
     private void enemyshoot(){
-     for(Enemy enemy: enemies) {
-        Timer enemyshoot = new Timer(3000, _ ->spawnEbull(enemy.x-mapX, enemy.y-mapY));
-        enemyshoot.start();
+        for(Enemy enemy: enemies) {
+            if (!enemyTimers.containsKey(enemy)) { // Only create a timer if one doesn't exist
+                Timer enemyShootTimer = new Timer(3000, _ ->spawnEbull(enemy.x-mapX, enemy.y-mapY, enemy)); // Pass the enemy to spawnEbull
+                enemyTimers.put(enemy, enemyShootTimer);
+                enemyShootTimer.start();
+            }
         }
     }
     private void updateChunks() {
