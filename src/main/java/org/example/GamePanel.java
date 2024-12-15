@@ -170,7 +170,6 @@ public class GamePanel extends JPanel implements Runnable {
 
         // Dibujar los tiles
         drawTiles(g2d);
-
         if (f3On) {
             // Draw active chunks
             drawChunks(g2d);
@@ -406,6 +405,15 @@ public class GamePanel extends JPanel implements Runnable {
         if (leftPressed) moveX -= 1;
         if (rightPressed) moveX += 1;
 
+        // Llamamos al método calculatePlayerTiles() y guardamos las direcciones de colisión
+        Set<String> collisionDirections = calculatePlayerTiles();  // Llamamos desde GamePanel y almacenamos las direcciones
+
+        // Impedir movimiento basado en las direcciones de colisión
+        if (collisionDirections.contains("up") && moveY < 0) moveY = 0;   // Si hay colisión arriba, no dejamos mover hacia arriba
+        if (collisionDirections.contains("down") && moveY > 0) moveY = 0; // Si hay colisión abajo, no dejamos mover hacia abajo
+        if (collisionDirections.contains("left") && moveX < 0) moveX = 0; // Si hay colisión izquierda, no dejamos mover hacia la izquierda
+        if (collisionDirections.contains("right") && moveX > 0) moveX = 0; // Si hay colisión derecha, no dejamos mover hacia la derecha
+
         // Normalize diagonal movement
         double magnitude = Math.sqrt(moveX * moveX + moveY * moveY);
         if (magnitude > 0) {
@@ -419,11 +427,9 @@ public class GamePanel extends JPanel implements Runnable {
 
         // Update current chunk
         updateChunks();
-        updateBullets(moveX,moveY);
-        updateEBullets(moveX,moveY);
-        //System.out.println("Updatemovement");
+        updateBullets(moveX, moveY);
+        updateEBullets(moveX, moveY);
 
-        //Separar esto que es nuevo
         // Check if player is moving (either moveX or moveY is not zero)
         boolean isMoving = moveX != 0 || moveY != 0;
 
@@ -437,6 +443,50 @@ public class GamePanel extends JPanel implements Runnable {
                 player.calculateWalkingFrame();
             }
         }
+    }
+
+    private Set<String> calculatePlayerTiles() {
+        int playerX = adjustedX;
+        int playerY = adjustedY;
+
+        // Dimensiones del sprite del jugador
+        int playerWidth = SpriteSize; // Ancho del sprite del jugador
+        int playerHeight = SpriteSize; // Alto del sprite del jugador
+
+        // Coordenadas específicas para determinar las direcciones de colisión
+        Point[] collisionPoints = new Point[] {
+                new Point(playerX, playerY - playerHeight / 2), // Punto superior (UP)
+                new Point(playerX, playerY + playerHeight / 2), // Punto inferior (DOWN)
+                new Point(playerX - playerWidth / 2, playerY),  // Punto izquierdo (LEFT)
+                new Point(playerX + playerWidth / 2, playerY)   // Punto derecho (RIGHT)
+        };
+
+        // Direcciones correspondientes a los puntos
+        String[] directions = { "up", "down", "left", "right" };
+
+        Set<String> collisionDirections = new HashSet<>();
+
+        // Recorremos todos los puntos de colisión para verificar si hay alguna
+        for (int i = 0; i < collisionPoints.length; i++) {
+            Point point = collisionPoints[i];
+
+            // Calcular el chunk correspondiente
+            int chunkX = (point.x < 0) ? (point.x / ChunkSizePixels) - 1 : (point.x / ChunkSizePixels);
+            int chunkY = (point.y < 0) ? (point.y / ChunkSizePixels) - 1 : (point.y / ChunkSizePixels);
+
+            // Calcular el tile dentro del chunk
+            int tileX = Math.floorMod(point.x, ChunkSizePixels) / SpriteSize;
+            int tileY = Math.floorMod(point.y, ChunkSizePixels) / SpriteSize;
+            Point chunkPos = new Point(chunkX, chunkY);
+            if (chunksActivos.contains(chunkPos)) {
+                Chunk chunk = chunkMap.get(chunkPos);
+                if (chunk != null && chunk.hasCollision(tileX, tileY)) {
+                    collisionDirections.add(directions[i]);
+                }
+            }
+        }
+
+        return collisionDirections;
     }
 
     private void updateBullets(double dx, double dy) {
