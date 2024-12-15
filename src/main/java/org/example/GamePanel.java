@@ -22,6 +22,7 @@ public class GamePanel extends JPanel implements Runnable {
     private final List<Enemy> enemies;
     //private final CopyOnWriteArrayList<Enemy> enemies;
     private final List<AmmoBox> ammoBoxes ;// Lista para almacenar las balas
+    private final List <HealBox> healBoxes;
     private final List<EnemyBullets> ebullets;
     //private final CopyOnWriteArrayList<EnemyBullets> ebullets;
     private int mapX = 0, mapY = 0; // Map offset
@@ -64,6 +65,7 @@ public class GamePanel extends JPanel implements Runnable {
         enemies = new ArrayList<>();
         //enemies = new CopyOnWriteArrayList<>();
         ammoBoxes = new ArrayList<>();
+        healBoxes = new ArrayList<>();
         //ebullets = new ArrayList<>();
         ebullets = new CopyOnWriteArrayList<>();
         enemyTimers = new HashMap<>();  // To fix enemies shooting after death
@@ -143,7 +145,8 @@ public class GamePanel extends JPanel implements Runnable {
         drawBullets(g2d);
         // Dibujar los enemigos
         drawEnemies(g2d);
-        drawAmmoBoxes(g2d);
+        drawBoxes(g2d);
+
         drawEnemybull(g2d);
 
         ui.render(g2d,playerStats[0], playerStats[1], playerStats[2], playerStats[3], playerStats[4]);
@@ -205,46 +208,76 @@ public class GamePanel extends JPanel implements Runnable {
             enemy.draw(g, screenX, screenY);
         }
     }
-    private void spawnAmmoBoxes(){
+    private void spawnBoxes(){
         Random rand = new Random();
         int x, y;
         x =rand.nextInt(10001) - 5000;  // This generates a random number
         y =rand.nextInt(10001) - 5000;  // between -5000 and 5000
-        ammoBoxes.add(new AmmoBox(x,y));
-        System.out.println("AmmoBox spawned at: " + x + ", " + y); // Debug
+        if (rand.nextBoolean()) {
+            ammoBoxes.add(new AmmoBox(x, y));
+        }   else {
+            healBoxes.add(new HealBox(x, y));
+        }
     }
-    private void drawAmmoBoxes(Graphics2D g) {
+    private void drawBoxes(Graphics2D g) {
 
          for (AmmoBox box : ammoBoxes) {
-             System.out.println("Drawing AmmoBox at (" + box.getAbsoluteX(mapX) + ", " + box.getAbsoluteY(mapY) + ") State: " + (box.isOpened ? "Opened" : "Closed"));
+             //System.out.println("Drawing AmmoBox at (" + box.getAbsoluteX(mapX) + ", " + box.getAbsoluteY(mapY) + ") State: " + (box.isOpened ? "Opened" : "Closed"));
+            box.draw(g, box.getAbsoluteX(mapX), box.getAbsoluteY(mapY));
+        }
+        for (HealBox box : healBoxes) {
+            //System.out.println("Drawing HealBox at (" + box.getAbsoluteX(mapX) + ", " + box.getAbsoluteY(mapY) + ") State: " + (box.isOpened ? "Opened" : "Closed"));
             box.draw(g, box.getAbsoluteX(mapX), box.getAbsoluteY(mapY));
         }
     }
-    private void openAmmoBoxes(){
-        for (AmmoBox box : ammoBoxes) {
-            if (box.openedByPlayer(player, mapX, mapY, getWidth() /2, getHeight()/2)) {
-                System.out.println("The ammobox has been opened by the player at: (" + box.x + ", " + box.y + ")");
-                if (!box.ammoRewardGiven) {
-                    playerStats[4] += 5;
-                    box.ammoRewardGiven = true;
-                }
-                box.openBox();
-            }
-        }
-    }
+
     private void openAmmoBoxesAndDeleteIfOpen(){
+        long currentTime = System.currentTimeMillis();
         // Use an Iterator to safely remove boxes
         Iterator<AmmoBox> ammoBoxIterator = ammoBoxes.iterator();
 
         while(ammoBoxIterator.hasNext()) {
             AmmoBox box = ammoBoxIterator.next();
             if (box.openedByPlayer(player, mapX, mapY, getWidth() / 2, getHeight() / 2)) {
-                System.out.println("The ammobox has been opened by the player at: (" + box.x + ", " + box.y + ")");
-                if (!box.ammoRewardGiven) {
-                    playerStats[4] += 5;
-                    box.ammoRewardGiven = true;
+                if (box.markedForDeletion == 0) {
+                    if (!box.ammoRewardGiven) {
+                        playerStats[0] = Math.min(playerStats[0]+20, playerStats[1]);
+                        box.ammoRewardGiven = true;
 
-                    ammoBoxIterator.remove();
+                        //ammoBoxIterator.remove();
+                    }
+                    box.markedForDeletion = currentTime;
+                }   else {
+                    if (currentTime - box.markedForDeletion > 20000) {
+                       ammoBoxIterator.remove();
+                        //System.out.println("Ammobox removed after 20 seconds");
+                    }
+                }
+
+            }
+        }
+    }
+    private void openHealBoxesAndDeleteIfOpen(){
+        long currentTime = System.currentTimeMillis();
+        // Use an Iterator to safely remove boxes
+        Iterator<HealBox> healBoxIterator = healBoxes.iterator();
+
+        while(healBoxIterator.hasNext()) {
+            HealBox box = healBoxIterator.next();
+            if (box.openedByPlayer(player, mapX, mapY, getWidth() / 2, getHeight() / 2)) {
+                if (box.markedForDeletion == 0) {
+                    if (!box.ammoRewardGiven) {
+                        playerStats[4] += 5;
+                        box.ammoRewardGiven = true;
+
+                        //ammoBoxIterator.remove();
+                    }
+                    box.markedForDeletion = currentTime;
+                }   else {
+                    if (currentTime - box.markedForDeletion > 20000) {
+                       healBoxIterator.remove();
+                        //System.out.println("Ammobox removed after 20 seconds");
+                    }
                 }
 
             }
@@ -253,9 +286,13 @@ public class GamePanel extends JPanel implements Runnable {
 
 
 
+
+
     private void checkCollisions() {
 
-        openAmmoBoxes();
+        //openAmmoBoxes();
+        openAmmoBoxesAndDeleteIfOpen();
+        openHealBoxesAndDeleteIfOpen();
         Iterator<Bullet> bulletIterator = bullets.iterator();
 
         while (bulletIterator.hasNext()) {
@@ -337,7 +374,7 @@ public class GamePanel extends JPanel implements Runnable {
         updateChunks();
         updateBullets(moveX,moveY);
         updateEBullets(moveX,moveY);
-        System.out.println("Updatemovement");
+        //System.out.println("Updatemovement");
 
         //Separar esto que es nuevo
         // Check if player is moving (either moveX or moveY is not zero)
@@ -393,8 +430,12 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
 
-    private void updateAmmoBoxes(){
+    private void updateBoxes(){
         for(AmmoBox box : ammoBoxes){
+            box.x = box.originalX - mapX;
+            box.y = box.originalY - mapY;
+        }
+        for(HealBox box : healBoxes){
             box.x = box.originalX - mapX;
             box.y = box.originalY - mapY;
         }
@@ -531,7 +572,7 @@ public class GamePanel extends JPanel implements Runnable {
         // Start the enemy spawner timer
         Timer enemySpawner = new Timer(2000, e -> spawnEnemy());
         enemySpawner.start();
-        Timer BoxSpawner = new Timer(5000, _ ->spawnAmmoBoxes());
+        Timer BoxSpawner = new Timer(5000, _ ->spawnBoxes());
         BoxSpawner.start();
         Timer enemyshooter = new Timer(1000, _ ->enemyshoot());
         enemyshooter.start();
@@ -545,7 +586,7 @@ public class GamePanel extends JPanel implements Runnable {
             updateEnemies();
             checkCollisions();
 
-            updateAmmoBoxes();
+            updateBoxes();
             SwingUtilities.invokeLater(this::repaint);
             updateFPS();
 
