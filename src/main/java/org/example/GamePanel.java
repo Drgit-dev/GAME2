@@ -119,7 +119,21 @@ public class GamePanel extends JPanel implements Runnable {
             }
         });
     }
-
+    private void winGame(){
+        if(enemycount==0&&playerStats[0]>0){
+           System.out.println("\n" +
+                   "░▒▓█▓▒░░▒▓█▓▒░  ░▒▓██████▓▒░  ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓███████▓▒░  \n" +
+                   "░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ \n" +
+                   "░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ \n" +
+                   " ░▒▓██████▓▒░  ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ \n" +
+                   "   ░▒▓█▓▒░     ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ \n" +
+                   "   ░▒▓█▓▒░     ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ \n" +
+                   "   ░▒▓█▓▒░      ░▒▓██████▓▒░   ░▒▓██████▓▒░         ░▒▓█████████████▓▒░  ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ \n" +
+                   "                                                                                                \n" +
+                   "                                                                                                \n");
+            System.exit(0);
+        }
+    }
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -276,6 +290,8 @@ public class GamePanel extends JPanel implements Runnable {
                 if (bullet.intersects(enemy, mapX, mapY)) {
                     enemyIterator.remove(); // Safely remove enemy
                     bulletIterator.remove();
+                    enemycount--;
+                    killcount++;
                     // Stop the associated timer:
                     if (enemyTimers.containsKey(enemy)) {
                         enemyTimers.get(enemy).stop();
