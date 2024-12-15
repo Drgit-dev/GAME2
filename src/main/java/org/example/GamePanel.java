@@ -11,7 +11,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
+import java.io.FileWriter;   // Import the FileWriter class
+import java.io.IOException;  // Import the IOException class to handle errors
 
 
 public class GamePanel extends JPanel implements Runnable {
@@ -119,7 +120,7 @@ public class GamePanel extends JPanel implements Runnable {
             }
         });
     }
-    private void winGame(){
+    private void winGame() throws IOException {
         if(enemycount==0&&playerStats[0]>0){
            System.out.println("\n" +
                    "░▒▓█▓▒░░▒▓█▓▒░  ░▒▓██████▓▒░  ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓███████▓▒░  \n" +
@@ -131,10 +132,13 @@ public class GamePanel extends JPanel implements Runnable {
                    "   ░▒▓█▓▒░      ░▒▓██████▓▒░   ░▒▓██████▓▒░         ░▒▓█████████████▓▒░  ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ \n" +
                    "                                                                                                \n" +
                    "                                                                                                \n");
+            FileWriter myWriter = new FileWriter("log.txt");
+            myWriter.write("Game won kills: "+killcount+"\n");
+            myWriter.close();
             System.exit(0);
         }
     }
-    private void loseGame(){
+    private void loseGame() throws IOException {
         if(playerStats[0]<=0){
             System.out.println("\n" +
                     "░▒▓█▓▒░░▒▓█▓▒░  ░▒▓██████▓▒░  ░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░         ░▒▓██████▓▒░   ░▒▓███████▓▒░ ░▒▓████████▓▒░ \n" +
@@ -146,6 +150,9 @@ public class GamePanel extends JPanel implements Runnable {
                     "   ░▒▓█▓▒░      ░▒▓██████▓▒░   ░▒▓██████▓▒░        ░▒▓████████▓▒░  ░▒▓██████▓▒░  ░▒▓███████▓▒░  ░▒▓████████▓▒░ \n" +
                     "                                                                                                               \n" +
                     "                                                                                                               \n");
+            FileWriter myWriter = new FileWriter("log.txt");
+            myWriter.write("Game Lost kills: "+killcount+"\n");
+            myWriter.close();
             System.exit(0);
         }
     }
@@ -168,6 +175,17 @@ public class GamePanel extends JPanel implements Runnable {
             // Draw HUD (FPS, coordinates, etc.)
             drawHUD(g2d);
         }
+        try {
+            winGame();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            loseGame();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
 
         // Dibujar las balas
         drawBullets(g2d);

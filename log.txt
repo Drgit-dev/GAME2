@@ -1,1 +1,1 @@
-Game Lost Kills: 40
+Game Lost kills: 3
